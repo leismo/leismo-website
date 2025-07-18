@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leismo - Fashion Loyalty System</title>
+    <!-- Add Leismo HTML website -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        .logo-font {
+            font-family: 'Playfair Display', serif;
+            font-weight: 300;
+            letter-spacing: 4px;
+            text-transform: lowercase;
+        }
+        .brand-color { color: #B19D87; }
+        .brand-bg { background-color: #B19D87; }
+        .brand-border { border-color: #B19D87; }
+        .secondary-bg { background-color: #DACFBD; }
+        .secondary-border { border-color: #DACFBD; }
+        .gradient-bg {
+            background: linear-gradient(to right, #B19D87, #DACFBD);
+        }
+        .hidden { display: none; }
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-white min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-40 border-b secondary-border">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center gap-8">
+                    <div class="text-2xl cursor-pointer brand-color logo-font" onclick="showPage('home')">
+                        leismo
+                    </div>
+                    <nav class="hidden md:flex gap-6">
+                        <button onclick="showPage('home')" class="font-medium transition-colors text-gray-700 hover:opacity-75" id="nav-home">
+                            หน้าแรก
+                        </button>
+                        <button onclick="showPage('loyalty')" class="font-medium transition-colors text-gray-700 hover:opacity-75 flex items-center gap-2 hidden" id="nav-loyalty">
+                            <span>⭐</span>
+                            Loyalty Card
+                        </button>
+                    </nav>
+                </div>
+                
+                <div class="flex items-center gap-4" id="header-auth">
+                    <div class="flex gap-4" id="auth-buttons">
+                        <button onclick="showPage('login')" class="hover:opacity-90 transition-colors font-light brand-color">
+                            เข้าสู่ระบบ
+                        </button>
+                        <button onclick="showPage('register')" class="bg-transparent border px-4 py-2 rounded-full hover:bg-opacity-10 transition-colors brand-color brand-border">
+                            สมัครสมาชิก
+                        </button>
+                    </div>
+                    
+                    <div class="flex items-center gap-4 hidden" id="user-info">
+                        <div class="flex items-center gap-2 text-sm brand-color">
+                            <span>⭐</span>
+                            <span id="user-points">0</span>
+                        </div>
+                        <span class="hidden sm:inline brand-color" id="user-name"></span>
+                        <button onclick="logout()" class="hover:opacity-90 transition-colors font-light brand-color">
+                            ออกจากระบบ
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Home Page -->
+        <div id="page-home" class="min-h-screen flex items-center justify-center gradient-bg">
+            <div class="text-center px-4">
+                <div class="mb-12">
+                    <div class="text-5xl cursor-pointer text-white logo-font mx-auto">
+                        leismo
+                    </div>
+                </div>
+                
+                <p class="text-xl mb-12 text-white font-light tracking-wide max-w-md mx-auto">
+                    แฟชั่นระดับพรีเมี่ยม สำหรับคุณที่มีสไตล์
+                </p>
+                
+                <div class="space-y-4">
+                    <div>
+                        <button class="bg-white px-12 py-4 rounded-full font-semibold text-lg hover:bg-opacity-90 transition-colors shadow-lg brand-color">
+                            ดูคอลเล็กชัน
+                        </button>
+                    </div>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center" id="home-auth-buttons">
+                        <button onclick="showPage('login')" class="border-2 border-white text-white px-8 py-3 rounded-full font-semibold hover:bg-white hover:text-gray-800 transition-colors">
+                            เข้าสู่ระบบ
+                        </button>
+                        
+                        <button onclick="showPage('register')" class="bg-white px-8 py-3 rounded-full font-semibold hover:bg-opacity-90 transition-colors brand-color">
+                            สมัครสมาชิก
+                        </button>
+                    </div>
+
+                    <div class="hidden" id="home-loyalty-button">
+                        <button onclick="showPage('loyalty')" class="bg-yellow-500 text-white px-8 py-3 rounded-full font-semibold hover:bg-yellow-600 transition-colors shadow-lg">
+                            <span class="inline-block mr-2">⭐</span>
+                            ระบบสมาชิก Loyalty
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Page -->
+        <div id="page-login" class="hidden min-h-screen flex items-center justify-center py-12 px-4" style="background: linear-gradient(to bottom right, #DACFBD, #B19D87)">
+            <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md border brand-border">
+                <div class="text-center mb-6">
+                    <div class="text-3xl cursor-pointer brand-color logo-font mx-auto mb-4" onclick="showPage('home')">
+                        leismo
+                    </div>
+                    <h2 class="text-2xl font-bold tracking-wide brand-color">เข้าสู่ระบบ</h2>
+                </div>
+                
+                <div id="login-error" class="hidden mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded"></div>
+                
+                <form onsubmit="handleLogin(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2 brand-color">อีเมล</label>
+                        <input type="email" id="login-email" required class="w-full p-3 border rounded-lg focus:ring-2 focus:border-transparent font-light secondary-border" placeholder="admin@leismo.com">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2 brand-color">รหัสผ่าน</label>
+                        <input type="password" id="login-password" required class="w-full p-3 border rounded-lg focus:ring-2 focus:border-transparent font-light secondary-border" placeholder="admin123">
+                    </div>
+                    
+                    <button type="submit" class="w-full text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-colors shadow-lg brand-bg" id="login-submit">
+                        เข้าสู่ระบบ
+                    </button>
+                </form>
+                
+                <p class="text-center mt-4 text-gray-600 font-light">
+                    ยังไม่มีบัญชี? <button onclick="showPage('register')" class="hover:underline brand-color">สมัครสมาชิก</button>
+                </p>
+                
+                <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                    <p class="text-sm text-blue-800 font-semibold">💡 สำหรับทดสอบ Admin:</p>
+                    <p class="text-xs text-blue-600">Email: admin@leismo.com</p>
+                    <p class="text-xs text-blue-600">Password: admin123</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Register Page -->
+        <div id="page-register" class="hidden min-h-screen flex items-center justify-center py-12 px-4" style="background: linear-gradient(to bottom right, #DACFBD, #B19D87)">
+            <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md border brand-border">
+                <div class="text-center mb-6">
+                    <div class="text-3xl cursor-pointer brand-color logo-font mx-auto mb-4" onclick="showPage('home')">
+                        leismo
+                    </div>
+                    <h2 class="text-2xl font-bold tracking-wide brand-color">สมัครสมาชิก</h2>
+                </div>
+                
+                <div id="register-error" class="hidden mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded"></div>
+                
+                <form onsubmit="handleRegister(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2 brand-color">ชื่อ-นามสกุล *</label>
+                        <input type="text" id="register-name" required class="w-full p-3 border rounded-lg focus:ring-2 focus:border-transparent font-light secondary-border" placeholder="กรอกชื่อ-นามสกุล">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2 brand-color">อีเมล *</label>
+                        <input type="email" id="register-email" required class="w-full p-3 border rounded-lg focus:ring-2 focus:border-transparent font-light secondary-border" placeholder="example@email.com">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2 brand-color">รหัสผ่าน *</label>
+                        <input type="password" id="register-password" required minlength="6" class="w-full p-3 border rounded-lg focus:ring-2 focus:border-transparent font-light secondary-border" placeholder="รหัสผ่านอย่างน้อย 6 ตัวอักษร">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2 brand-color">วันเดือนปีเกิด *</label>
+                        <input type="date" id="register-birthdate" required class="w-full p-3 border rounded-lg focus:ring-2 focus:border-transparent font-light secondary-border">
+                        <p class="text-xs text-gray-500 mt-1">🎉 รับส่วนลดพิเศษในวันเกิดของคุณ!</p>
+                    </div>
+                    
+                    <button type="submit" class="w-full text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-colors shadow-lg brand-bg" id="register-submit">
+                        สมัครสมาชิก
+                    </button>
+                </form>
+                
+                <p class="text-center mt-4 text-gray-600 font-light">
+                    มีบัญชีแล้ว? <button onclick="showPage('login')" class="hover:underline brand-color">เข้าสู่ระบบ</button>
+                </p>
+            </div>
+        </div>
+
+        <!-- Loyalty Page -->
+        <div id="page-loyalty" class="hidden min-h-screen py-8 px-4 secondary-bg">
+            <div class="container mx-auto max-w-6xl">
+                <div class="bg-white rounded-lg shadow-lg p-6 md:p-8 border mb-8 brand-border">
+                    <h1 class="text-2xl md:text-3xl font-bold mb-6 tracking-wide brand-color">
+                        สวัสดี <span id="loyalty-user-name"></span>
+                    </h1>
+                    <p class="text-lg mb-8 brand-color">
+                        สมาชิก <span id="loyalty-user-tier"></span> | <span id="loyalty-user-points"></span> แต้ม
+                    </p>
+
+                    <!-- Navigation Tabs -->
+                    <div class="flex flex-col sm:flex-row border-b mb-8 overflow-x-auto">
+                        <button onclick="showLoyaltyTab('dashboard')" class="loyalty-tab flex-1 flex items-center justify-center gap-2 py-4 px-6 font-semibold transition-colors whitespace-nowrap border-b-2 brand-color" style="border-color: #B19D87">
+                            <span>⭐</span>
+                            แดชบอร์ด
+                        </button>
+                        <button onclick="showLoyaltyTab('rewards')" class="loyalty-tab flex-1 flex items-center justify-center gap-2 py-4 px-6 font-semibold transition-colors whitespace-nowrap hover:bg-gray-50" style="color: #6B7280; border-color: transparent">
+                            <span>🎁</span>
+                            แลกของรางวัล
+                        </button>
+                        <button onclick="showLoyaltyTab('coupons')" class="loyalty-tab flex-1 flex items-center justify-center gap-2 py-4 px-6 font-semibold transition-colors whitespace-nowrap hover:bg-gray-50" style="color: #6B7280; border-color: transparent">
+                            <span>🏆</span>
+                            คูปองของฉัน
+                        </button>
+                    </div>
+
+                    <!-- Tab Content -->
+                    <div id="loyalty-dashboard" class="loyalty-content">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="text-center p-6 rounded-lg secondary-bg">
+                                <div class="text-6xl mb-4">🏆</div>
+                                <h3 class="text-xl font-semibold mb-2 brand-color">ระดับสมาชิก</h3>
+                                <p class="text-2xl font-bold brand-color" id="dashboard-tier">Bronze</p>
+                            </div>
+                            
+                            <div class="text-center p-6 rounded-lg secondary-bg">
+                                <div class="text-6xl mb-4">⭐</div>
+                                <h3 class="text-xl font-semibold mb-2 brand-color">แต้มสะสม</h3>
+                                <p class="text-2xl font-bold brand-color" id="dashboard-points">0</p>
+                            </div>
+                            
+                            <div class="text-center p-6 rounded-lg secondary-bg">
+                                <div class="text-6xl mb-4">🎁</div>
+                                <h3 class="text-xl font-semibold mb-2 brand-color">คูปองที่มี</h3>
+                                <p class="text-2xl font-bold brand-color" id="dashboard-coupons">0</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="loyalty-rewards" class="loyalty-content hidden">
+                        <h3 class="text-xl font-semibold mb-6 text-center brand-color">
+                            แลกของรางวัลด้วยแต้มสะสม
+                        </h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="rewards-container">
+                            <!-- Rewards will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <div id="loyalty-coupons" class="loyalty-content hidden">
+                        <h3 class="text-xl font-semibold mb-6 text-center brand-color">
+                            คูปองส่วนลดของฉัน
+                        </h3>
+                        
+                        <div id="coupons-container">
+                            <!-- Coupons will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <div class="mt-8 p-6 bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-lg">
+                        <h3 class="text-xl font-semibold mb-4 brand-color">วิธีใช้ระบบ Loyalty Card</h3>
+                        <ol class="list-decimal list-inside space-y-2 text-gray-700">
+                            <li>ซื้อสินค้าจากช่องทาง Line Shopping หรือ Lazada</li>
+                            <li>นำรหัสคำสั่งซื้อมากรอกในระบบ</li>
+                            <li>รอแอดมินตรวจสอบและอนุมัติ</li>
+                            <li>ได้รับแต้มตามยอดซื้อ (1 แต้ม/100 บาท)</li>
+                            <li><strong>แลกแต้มเป็นคูปองส่วนลด</strong></li>
+                            <li><strong>นำโค้ดคูปองไปใช้ในช่องทางอื่น</strong></li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Screen -->
+        <div id="loading-screen" class="hidden min-h-screen flex items-center justify-center secondary-bg">
+            <div class="text-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style="border-color: #B19D87"></div>
+                <p class="brand-color">กำลังโหลด...</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBXGkArdsTGXW58iqIas3c9dodTWv0hVuE",
+            authDomain: "leismo-website-8f6b0.firebaseapp.com",
+            projectId: "leismo-website-8f6b0",
+            storageBucket: "leismo-website-8f6b0.firebasestorage.app",
+            messagingSenderId: "1085891529571",
+            appId: "1:1085891529571:web:9125f49c54ea1de9b96156",
+            measurementId: "G-FZQ92YJ9ZN"
+        };
+
+        // State Management
+        let currentUser = null;
+        let isLoggedIn = false;
+        let users = [];
+
+        // Rewards Data
+        const rewards = [
+            { id: 1, name: 'คูปองส่วนลด 100฿', points: 500, type: 'coupon', value: 100 },
+            { id: 2, name: 'คูปองส่วนลด 250฿', points: 1000, type: 'coupon', value: 250 },
+            { id: 3, name: 'คูปองส่วนลด 500฿', points: 2000, type: 'coupon', value: 500 },
+            { id: 4, name: 'ฟรีส่ง (มูลค่า 50฿)', points: 300, type: 'coupon', value: 50 },
+            { id: 5, name: 'ส่วนลด 15% (สูงสุด 300฿)', points: 1500, type: 'percent', value: 15, maxDiscount: 300 }
+        ];
+
+        // Utility Functions
+        function hashPassword(password) {
+            return btoa(password + 'leismo_salt');
+        }
+
+        function verifyPassword(inputPassword, hashedPassword) {
+            return hashPassword(inputPassword) === hashedPassword;
+        }
+
+        function generateCouponCode() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = 'LEISMO';
+            for (let i = 0; i < 6; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('leismo_users', JSON.stringify(users));
+            if (currentUser) {
+                localStorage.setItem('leismo_current_user', JSON.stringify(currentUser));
+            } else {
+                localStorage.removeItem('leismo_current_user');
+            }
+        }
+
+        function loadFromStorage() {
+            try {
+                const usersData = localStorage.getItem('leismo_users');
+                const currentUserData = localStorage.getItem('leismo_current_user');
+                
+                if (usersData) {
+                    users = JSON.parse(usersData);
+                }
+                
+                if (currentUserData) {
+                    currentUser = JSON.parse(currentUserData);
+                    isLoggedIn = true;
+                    updateAuthUI();
+                }
+
+                // Add admin default if not exists
+                const hasAdmin = users.some(u => u.email === 'admin@leismo.com');
+                if (!hasAdmin) {
+                    const adminUser = {
+                        id: 'admin_001',
+                        name: 'Admin Leismo',
+                        email: 'admin@leismo.com',
+                        password: hashPassword('admin123'),
+                        points: 99999,
+                        tier: 'Platinum',
+                        isAdmin: true,
+                        coupons: [],
+                        createdAt: new Date().toISOString()
+                    };
+                    users.push(adminUser);
+                    saveToStorage();
+                }
+            } catch (error) {
+                console.error('Error loading from storage:', error);
+            }
+        }
+
+        // Page Navigation
+        function showPage(pageName) {
+            // Hide all pages
+            const pages = ['home', 'login', 'register', 'loyalty'];
+            pages.forEach(page => {
+                document.getElementById(`page-${page}`).classList.add('hidden');
+            });
+
+            // Show selected page
+            document.getElementById(`page-${pageName}`).classList.remove('hidden');
+
+            // Update navigation
+            updateNavigation(pageName);
+
+            // Special handling for loyalty page
+            if (pageName === 'loyalty') {
+                if (!isLoggedIn) {
+                    showPage('login');
+                    return;
+                }
+                updateLoyaltyPage();
+            }
+        }
+
+        function updateNavigation(currentPage) {
+            const navHome = document.getElementById('nav-home');
+            const navLoyalty = document.getElementById('nav-loyalty');
+
+            // Reset colors
+            navHome.style.color = currentPage === 'home' ? '#B19D87' : '#6B7280';
+            if (navLoyalty) {
+                navLoyalty.style.color = currentPage === 'loyalty' ? '#B19D87' : '#6B7280';
+            }
+        }
+
+        function updateAuthUI() {
+            const authButtons = document.getElementById('auth-buttons');
+            const userInfo = document.getElementById('user-info');
+            const navLoyalty = document.getElementById('nav-loyalty');
+            const homeAuthButtons = document.getElementById('home-auth-buttons');
+            const homeLoyaltyButton = document.getElementById('home-loyalty-button');
+
+            if (isLoggedIn && currentUser) {
+                // Header
+                authButtons.classList.add('hidden');
+                userInfo.classList.remove('hidden');
+                navLoyalty.classList.remove('hidden');
+                
+                // Update user info
+                document.getElementById('user-name').textContent = currentUser.name;
+                document.getElementById('user-points').textContent = currentUser.points?.toLocaleString() || '0';
+
+                // Home page
+                homeAuthButtons.classList.add('hidden');
+                homeLoyaltyButton.classList.remove('hidden');
+            } else {
+                // Header
+                authButtons.classList.remove('hidden');
+                userInfo.classList.add('hidden');
+                navLoyalty.classList.add('hidden');
+
+                // Home page
+                homeAuthButtons.classList.remove('hidden');
+                homeLoyaltyButton.classList.add('hidden');
+            }
+        }
+
+        // Authentication Functions
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const submitBtn = document.getElementById('login-submit');
+            const errorDiv = document.getElementById('login-error');
+
+            if (!email || !password) {
+                showError('login-error', 'กรุณากรอกอีเมลและรหัสผ่าน');
+                return;
+            }
+
+            submitBtn.textContent = 'กำลังเข้าสู่ระบบ...';
+            submitBtn.disabled = true;
+
+            try {
+                const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+                
+                if (!user) {
+                    throw new Error('ไม่พบผู้ใช้นี้');
+                }
+
+                if (!verifyPassword(password, user.password)) {
+                    throw new Error('รหัสผ่านไม่ถูกต้อง');
+                }
+
+                currentUser = { ...user };
+                delete currentUser.password;
+                isLoggedIn = true;
+                
+                saveToStorage();
+                updateAuthUI();
+                hideError('login-error');
+                
+                alert('เข้าสู่ระบบสำเร็จ!');
+                showPage('home');
+                
+            } catch (error) {
+                showError('login-error', error.message);
+            } finally {
+                submitBtn.textContent = 'เข้าสู่ระบบ';
+                submitBtn.disabled = false;
+            }
+        }
+
+        async function handleRegister(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('register-name').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const birthDate = document.getElementById('register-birthdate').value;
+            const submitBtn = document.getElementById('register-submit');
+
+            if (!name || !email || !password || !birthDate) {
+                showError('register-error', 'กรุณากรอกข้อมูลให้ครบถ้วน');
+                return;
+            }
+
+            if (password.length < 6) {
+                showError('register-error', 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');
+                return;
+            }
+
+            submitBtn.textContent = 'กำลังสมัคร...';
+            submitBtn.disabled = true;
+
+            try {
+                const existingUser = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+                if (existingUser) {
+                    throw new Error('อีเมลนี้มีผู้ใช้แล้ว');
+                }
+
+                const newUser = {
+                    id: 'user_' + Date.now(),
+                    name: name,
+                    email: email.toLowerCase(),
+                    password: hashPassword(password),
+                    birthDate: birthDate,
+                    points: 100,
+                    tier: 'Bronze',
+                    coupons: [],
+                    isAdmin: false,
+                    createdAt: new Date().toISOString()
+                };
+
+                users.push(newUser);
+                currentUser = { ...newUser };
+                delete currentUser.password;
+                isLoggedIn = true;
+
+                saveToStorage();
+                updateAuthUI();
+                hideError('register-error');
+                
+                alert('สมัครสมาชิกสำเร็จ! ยินดีต้อนรับสู่ Leismo');
+                showPage('home');
+                
+            } catch (error) {
+                showError('register-error', error.message);
+            } finally {
+                submitBtn.textContent = 'สมัครสมาชิก';
+                submitBtn.disabled = false;
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            isLoggedIn = false;
+            localStorage.removeItem('leismo_current_user');
+            updateAuthUI();
+            showPage('home');
+        }
+
+        function showError(elementId, message) {
+            const errorDiv = document.getElementById(elementId);
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+        }
+
+        function hideError(elementId) {
+            const errorDiv = document.getElementById(elementId);
+            errorDiv.classList.add('hidden');
+        }
+
+        // Loyalty Page Functions
+        function showLoyaltyTab(tabName) {
+            // Hide all tab content
+            const contents = document.querySelectorAll('.loyalty-content');
+            contents.forEach(content => content.classList.add('hidden'));
+
+            // Show selected tab content
+            document.getElementById(`loyalty-${tabName}`).classList.remove('hidden');
+
+            // Update tab buttons
+            const tabs = document.querySelectorAll('.loyalty-tab');
+            tabs.forEach(tab => {
+                tab.style.color = '#6B7280';
+                tab.style.borderColor = 'transparent';
+                tab.classList.remove('border-b-2');
+            });
+
+            // Highlight active tab
+            event.target.style.color = '#B19D87';
+            event.target.style.borderColor = '#B19D87';
+            event.target.classList.add('border-b-2');
+
+            // Load specific tab content
+            if (tabName === 'rewards') {
+                loadRewards();
+            } else if (tabName === 'coupons') {
+                loadCoupons();
+            }
+        }
+
+        function updateLoyaltyPage() {
+            if (!currentUser) return;
+
+            document.getElementById('loyalty-user-name').textContent = currentUser.name;
+            document.getElementById('loyalty-user-tier').textContent = currentUser.tier;
+            document.getElementById('loyalty-user-points').textContent = currentUser.points?.toLocaleString() || '0';
+
+            // Update dashboard
+            document.getElementById('dashboard-tier').textContent = currentUser.tier;
+            document.getElementById('dashboard-points').textContent = currentUser.points?.toLocaleString() || '0';
+            document.getElementById('dashboard-coupons').textContent = (currentUser.coupons || []).filter(c => !c.used).length;
+
+            // Show dashboard tab by default
+            showLoyaltyTab('dashboard');
+        }
+
+        function loadRewards() {
+            const container = document.getElementById('rewards-container');
+            container.innerHTML = '';
+
+            rewards.forEach(reward => {
+                const canRedeem = currentUser && currentUser.points >= reward.points;
+                const rewardDiv = document.createElement('div');
+                rewardDiv.className = 'border rounded-lg p-6 text-center hover:shadow-lg transition-shadow';
+                rewardDiv.style.borderColor = '#DACFBD';
+
+                rewardDiv.innerHTML = `
+                    <div class="mb-4">
+                        <div class="text-6xl">🎁</div>
+                    </div>
+                    
+                    <h4 class="font-semibold mb-2 brand-color">${reward.name}</h4>
+                    <p class="text-2xl font-bold mb-4 brand-color">
+                        ${reward.points.toLocaleString()} แต้ม
+                    </p>
+                    
+                    <button onclick="redeemReward(${reward.id})" 
+                            ${!canRedeem ? 'disabled' : ''} 
+                            class="w-full py-2 rounded-lg font-semibold transition-colors ${canRedeem ? 'text-white hover:opacity-90 brand-bg' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}">
+                        ${canRedeem ? 'แลกเลย' : 'แต้มไม่พอ'}
+                    </button>
+                `;
+
+                container.appendChild(rewardDiv);
+            });
+        }
+
+        function loadCoupons() {
+            const container = document.getElementById('coupons-container');
+            const userCoupons = currentUser?.coupons || [];
+
+            if (userCoupons.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <div class="text-8xl mb-4">🎁</div>
+                        <p class="text-gray-500 text-lg">ยังไม่มีคูปอง</p>
+                        <p class="text-gray-400">แลกแต้มเพื่อรับคูปองส่วนลด</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = '<div class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>';
+            const grid = container.querySelector('.grid');
+
+            userCoupons.forEach(coupon => {
+                const couponDiv = document.createElement('div');
+                couponDiv.className = `border rounded-lg p-6 ${coupon.used ? 'opacity-50 bg-gray-50' : 'bg-white border-dashed'}`;
+                couponDiv.style.borderColor = coupon.used ? '#ccc' : '#B19D87';
+
+                couponDiv.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h4 class="font-bold text-lg brand-color">${coupon.name}</h4>
+                            <p class="text-sm text-gray-600">ได้รับ: ${coupon.createdDate}</p>
+                            <p class="text-sm text-gray-600">หมดอายุ: ${coupon.expiryDate}</p>
+                        </div>
+                        <div class="text-right">
+                            ${coupon.type === 'coupon' ? 
+                                `<p class="text-3xl font-bold brand-color">฿${coupon.value}</p>` : 
+                                `<p class="text-3xl font-bold brand-color">${coupon.value}%</p>`
+                            }
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-100 p-3 rounded text-center mb-4">
+                        <p class="text-sm text-gray-600 mb-1">โค้ดคูปอง:</p>
+                        <p class="text-lg font-mono font-bold tracking-wider brand-color">${coupon.code}</p>
+                    </div>
+
+                    <div class="text-center py-2 px-4 rounded-full text-sm font-semibold ${coupon.used ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}">
+                        ${coupon.used ? '✓ ใช้แล้ว' : '🎫 ใช้ได้'}
+                    </div>
+
+                    ${!coupon.used ? `
+                        <div class="mt-4 text-sm text-gray-600">
+                            <p>💡 <strong>วิธีใช้:</strong></p>
+                            <p>• คัดลอกโค้ด "${coupon.code}"</p>
+                            <p>• นำไปใช้ที่ Line Shopping หรือ Lazada</p>
+                            <p>• ติดต่อเราเพื่อใช้โค้ด</p>
+                        </div>
+                    ` : ''}
+                `;
+
+                grid.appendChild(couponDiv);
+            });
+        }
+
+        function redeemReward(rewardId) {
+            if (!currentUser) return;
+
+            const reward = rewards.find(r => r.id === rewardId);
+            if (!reward) return;
+
+            if (currentUser.points < reward.points) {
+                alert('แต้มไม่พอสำหรับแลกของรางวัลนี้');
+                return;
+            }
+
+            const couponCode = generateCouponCode();
+            const newCoupon = {
+                id: Date.now().toString(),
+                code: couponCode,
+                name: reward.name,
+                type: reward.type,
+                value: reward.value,
+                maxDiscount: reward.maxDiscount || null,
+                used: false,
+                createdDate: new Date().toLocaleDateString('th-TH'),
+                expiryDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toLocaleDateString('th-TH')
+            };
+
+            // Update user data
+            currentUser.points -= reward.points;
+            currentUser.coupons = currentUser.coupons || [];
+            currentUser.coupons.push(newCoupon);
+
+            // Update stored user in users array
+            const userIndex = users.findIndex(u => u.id === currentUser.id);
+            if (userIndex !== -1) {
+                users[userIndex] = { ...currentUser, password: users[userIndex].password };
+            }
+
+            saveToStorage();
+            updateLoyaltyPage();
+            updateAuthUI();
+
+            alert(`🎉 แลกของรางวัลสำเร็จ!\nโค้ดคูปอง: ${couponCode}\nกรุณาบันทึกโค้ดนี้ไว้`);
+        }
+
+        // Initialize the application
+        function init() {
+            loadFromStorage();
+            updateAuthUI();
+            showPage('home');
+        }
+
+        // Start the application
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
