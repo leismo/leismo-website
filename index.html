@@ -351,11 +351,9 @@
                             <table class="w-full">
                                 <thead class="secondary-bg">
                                     <tr>
-                                        <th class="text-left p-4 font-semibold brand-color">ชื่อ</th>
-                                        <th class="text-left p-4 font-semibold brand-color">อีเมล</th>
+                                        <th class="text-left p-4 font-semibold brand-color">ชื่อสมาชิก</th>
                                         <th class="text-left p-4 font-semibold brand-color">ระดับ</th>
-                                        <th class="text-left p-4 font-semibold brand-color">แต้ม</th>
-                                        <th class="text-left p-4 font-semibold brand-color">คูปอง</th>
+                                        <th class="text-left p-4 font-semibold brand-color">แต้มปัจจุบัน</th>
                                         <th class="text-left p-4 font-semibold brand-color">วันที่สมัคร</th>
                                         <th class="text-left p-4 font-semibold brand-color">จัดการ</th>
                                     </tr>
@@ -364,6 +362,83 @@
                                     <!-- Users will be populated here -->
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+
+                    <!-- User Detail Modal -->
+                    <div id="user-detail-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                        <div class="bg-white rounded-lg max-w-4xl w-full max-h-screen overflow-y-auto">
+                            <!-- Modal Header -->
+                            <div class="p-6 border-b brand-border flex justify-between items-center sticky top-0 bg-white">
+                                <h2 class="text-2xl font-semibold brand-color">👤 ข้อมูลสมาชิก</h2>
+                                <button onclick="closeUserDetailModal()" class="text-gray-500 hover:text-gray-700 text-2xl">×</button>
+                            </div>
+
+                            <!-- Modal Content -->
+                            <div class="p-6">
+                                <!-- User Basic Info -->
+                                <div class="grid md:grid-cols-2 gap-6 mb-8">
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-600 mb-1">ชื่อ-นามสกุล</label>
+                                            <p class="text-lg font-semibold brand-color" id="detail-user-name"></p>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-600 mb-1">อีเมล</label>
+                                            <p class="text-lg" id="detail-user-email"></p>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-600 mb-1">วันเดือนปีเกิด</label>
+                                            <p class="text-lg" id="detail-user-birthdate">🎂 <span></span></p>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-600 mb-1">วันที่สมัครสมาชิก</label>
+                                            <p class="text-lg" id="detail-user-created"></p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-600 mb-1">ระดับสมาชิก</label>
+                                            <span id="detail-user-tier" class="inline-block px-3 py-1 rounded-full text-sm font-semibold"></span>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-600 mb-1">แต้มสะสม</label>
+                                            <p class="text-2xl font-bold brand-color">⭐ <span id="detail-user-points"></span> แต้ม</p>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-600 mb-1">คูปองทั้งหมด</label>
+                                            <p class="text-lg">🎫 <span id="detail-user-total-coupons"></span> ใบ</p>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-600 mb-1">คูปองใช้ได้</label>
+                                            <p class="text-lg text-green-600">✅ <span id="detail-user-active-coupons"></span> ใบ</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Coupons History -->
+                                <div class="mb-8">
+                                    <h3 class="text-xl font-semibold brand-color mb-4">🎫 ประวัติคูปอง</h3>
+                                    <div id="detail-coupons-container" class="space-y-3">
+                                        <!-- Coupons will be populated here -->
+                                    </div>
+                                </div>
+
+                                <!-- Points Management -->
+                                <div class="bg-gray-50 p-6 rounded-lg">
+                                    <h3 class="text-xl font-semibold brand-color mb-4">⚡ จัดการแต้ม</h3>
+                                    <div class="flex gap-4 items-end">
+                                        <div class="flex-1">
+                                            <label class="block text-sm font-medium text-gray-600 mb-2">เพิ่มแต้ม</label>
+                                            <input type="number" id="detail-points-to-add" min="1" class="w-full p-3 border rounded-lg secondary-border" placeholder="กรอกจำนวนแต้ม">
+                                        </div>
+                                        <button onclick="addPointsFromDetail()" class="brand-bg text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90">
+                                            เพิ่มแต้ม
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -917,15 +992,15 @@
                 row.className = 'border-b hover:bg-gray-50';
 
                 const createdDate = user.createdAt ? new Date(user.createdAt).toLocaleDateString('th-TH') : 'ไม่ระบุ';
-                const couponsCount = (user.coupons || []).length;
                 const activeCoupons = (user.coupons || []).filter(c => !c.used).length;
 
                 row.innerHTML = `
                     <td class="p-4">
-                        <div class="font-semibold brand-color">${user.name}</div>
-                        <div class="text-sm text-gray-500">${user.uid}</div>
+                        <button onclick="openUserDetailModal('${user.uid}')" class="text-left w-full hover:bg-blue-50 p-2 rounded transition-colors">
+                            <div class="font-semibold brand-color hover:text-blue-600 cursor-pointer">${user.name}</div>
+                            <div class="text-sm text-gray-500">${user.email}</div>
+                        </button>
                     </td>
-                    <td class="p-4">${user.email}</td>
                     <td class="p-4">
                         <span class="px-2 py-1 rounded-full text-xs font-semibold ${
                             user.tier === 'Platinum' ? 'bg-purple-100 text-purple-600' :
@@ -938,9 +1013,6 @@
                     </td>
                     <td class="p-4">
                         <span class="font-semibold">${(user.points || 0).toLocaleString()}</span> แต้ม
-                    </td>
-                    <td class="p-4">
-                        <span class="text-green-600 font-semibold">${activeCoupons}</span> / ${couponsCount} ใบ
                     </td>
                     <td class="p-4 text-gray-600">${createdDate}</td>
                     <td class="p-4">
@@ -958,7 +1030,7 @@
             if (users.filter(u => !u.isAdmin).length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="7" class="p-8 text-center text-gray-500">
+                        <td colspan="5" class="p-8 text-center text-gray-500">
                             <div class="text-4xl mb-2">👥</div>
                             <p>ยังไม่มีสมาชิกในระบบ</p>
                         </td>
@@ -966,6 +1038,167 @@
                 `;
             }
         }
+
+        // User Detail Modal Functions
+        let currentDetailUser = null;
+
+        window.openUserDetailModal = async function(userId) {
+            try {
+                // Get user data from Firestore
+                const userRef = doc(db, 'users', userId);
+                const userSnap = await getDoc(userRef);
+                
+                if (!userSnap.exists()) {
+                    alert('ไม่พบข้อมูลผู้ใช้');
+                    return;
+                }
+
+                currentDetailUser = userSnap.data();
+                populateUserDetailModal(currentDetailUser);
+                document.getElementById('user-detail-modal').classList.remove('hidden');
+            } catch (error) {
+                console.error('Error loading user details:', error);
+                alert('เกิดข้อผิดพลาดในการโหลดข้อมูล');
+            }
+        };
+
+        function populateUserDetailModal(user) {
+            // Basic info
+            document.getElementById('detail-user-name').textContent = user.name;
+            document.getElementById('detail-user-email').textContent = user.email;
+            
+            // Birthday
+            const birthdateSpan = document.querySelector('#detail-user-birthdate span');
+            if (user.birthDate) {
+                const birthDate = new Date(user.birthDate);
+                birthdateSpan.textContent = birthDate.toLocaleDateString('th-TH', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            } else {
+                birthdateSpan.textContent = 'ไม่ระบุ';
+            }
+
+            // Created date
+            const createdDate = user.createdAt ? new Date(user.createdAt).toLocaleDateString('th-TH', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }) : 'ไม่ระบุ';
+            document.getElementById('detail-user-created').textContent = createdDate;
+
+            // Tier
+            const tierElement = document.getElementById('detail-user-tier');
+            tierElement.textContent = user.tier;
+            tierElement.className = `inline-block px-3 py-1 rounded-full text-sm font-semibold ${
+                user.tier === 'Platinum' ? 'bg-purple-100 text-purple-600' :
+                user.tier === 'Gold' ? 'bg-yellow-100 text-yellow-600' :
+                user.tier === 'Silver' ? 'bg-gray-100 text-gray-600' :
+                'bg-orange-100 text-orange-600'
+            }`;
+
+            // Points and coupons
+            document.getElementById('detail-user-points').textContent = (user.points || 0).toLocaleString();
+            
+            const userCoupons = user.coupons || [];
+            const activeCoupons = userCoupons.filter(c => !c.used);
+            
+            document.getElementById('detail-user-total-coupons').textContent = userCoupons.length;
+            document.getElementById('detail-user-active-coupons').textContent = activeCoupons.length;
+
+            // Populate coupons
+            populateCouponsHistory(userCoupons);
+        }
+
+        function populateCouponsHistory(coupons) {
+            const container = document.getElementById('detail-coupons-container');
+            
+            if (coupons.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <div class="text-4xl mb-2">🎫</div>
+                        <p>ยังไม่มีประวัติการแลกคูปอง</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Sort coupons by creation date (newest first)
+            coupons.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
+
+            container.innerHTML = '';
+            coupons.forEach(coupon => {
+                const couponDiv = document.createElement('div');
+                couponDiv.className = `border rounded-lg p-4 ${coupon.used ? 'bg-gray-50 opacity-75' : 'bg-white border-dashed border-green-300'}`;
+
+                couponDiv.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <h4 class="font-semibold brand-color">${coupon.name}</h4>
+                            <p class="text-sm text-gray-600">โค้ด: <span class="font-mono font-semibold">${coupon.code}</span></p>
+                            <p class="text-sm text-gray-600">ได้รับ: ${coupon.createdDate} | หมดอายุ: ${coupon.expiryDate}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-lg font-bold brand-color">
+                                ${coupon.type === 'coupon' ? `฿${coupon.value}` : `${coupon.value}%`}
+                            </p>
+                            <span class="inline-block px-2 py-1 rounded-full text-xs font-semibold ${
+                                coupon.used ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'
+                            }">
+                                ${coupon.used ? 'ใช้แล้ว' : 'ใช้ได้'}
+                            </span>
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(couponDiv);
+            });
+        }
+
+        window.closeUserDetailModal = function() {
+            currentDetailUser = null;
+            document.getElementById('user-detail-modal').classList.add('hidden');
+        };
+
+        window.addPointsFromDetail = async function() {
+            const pointsToAdd = parseInt(document.getElementById('detail-points-to-add').value);
+            
+            if (!pointsToAdd || pointsToAdd <= 0) {
+                alert('กรุณากรอกจำนวนแต้มที่ถูกต้อง');
+                return;
+            }
+
+            if (!currentDetailUser) return;
+
+            try {
+                // Update user points in Firestore
+                const userRef = doc(db, 'users', currentDetailUser.uid);
+                const newPoints = (currentDetailUser.points || 0) + pointsToAdd;
+                
+                await updateDoc(userRef, {
+                    points: newPoints
+                });
+
+                // Update current detail user data
+                currentDetailUser.points = newPoints;
+
+                // Update the modal display
+                document.getElementById('detail-user-points').textContent = newPoints.toLocaleString();
+                document.getElementById('detail-points-to-add').value = '';
+
+                alert(`✅ เพิ่มแต้มสำเร็จ!\nเพิ่ม ${pointsToAdd.toLocaleString()} แต้มให้ ${currentDetailUser.name}`);
+                
+                // Refresh admin data
+                loadAdminData();
+                
+            } catch (error) {
+                console.error('Error adding points:', error);
+                alert('เกิดข้อผิดพลาดในการเพิ่มแต้ม');
+            }
+        };
 
         // Add Points Modal Functions
         let selectedUserId = null;
