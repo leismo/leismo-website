@@ -4,10 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leismo - Fashion Loyalty System</title>
-    <!-- Add Leismo HTML website -->
+    <!-- Firebase v9 SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;600&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <style>
         .logo-font {
             font-family: 'Playfair Display', serif;
@@ -157,6 +159,11 @@
                     <p class="text-xs text-blue-600">Email: admin@leismo.com</p>
                     <p class="text-xs text-blue-600">Password: admin123</p>
                 </div>
+                
+                <div class="mt-4 p-4 bg-green-50 rounded-lg">
+                    <p class="text-sm text-green-800 font-semibold">🔥 Firebase Database Connected!</p>
+                    <p class="text-xs text-green-600">ข้อมูลเก็บในคลาวด์ เข้าได้ทุกเครื่อง</p>
+                </div>
             </div>
         </div>
 
@@ -291,16 +298,20 @@
         </div>
 
         <!-- Loading Screen -->
-        <div id="loading-screen" class="hidden min-h-screen flex items-center justify-center secondary-bg">
+        <div id="loading-screen" class="min-h-screen flex items-center justify-center secondary-bg">
             <div class="text-center">
                 <div class="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style="border-color: #B19D87"></div>
-                <p class="brand-color">กำลังโหลด...</p>
+                <p class="brand-color">กำลังเชื่อมต่อ Firebase...</p>
             </div>
         </div>
     </main>
 
-    <script>
+    <script type="module">
         // Firebase Configuration
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, query, where } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+
         const firebaseConfig = {
             apiKey: "AIzaSyBXGkArdsTGXW58iqIas3c9dodTWv0hVuE",
             authDomain: "leismo-website-8f6b0.firebaseapp.com",
@@ -311,10 +322,14 @@
             measurementId: "G-FZQ92YJ9ZN"
         };
 
-        // State Management
-        let currentUser = null;
-        let isLoggedIn = false;
-        let users = [];
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Global Variables
+        window.currentUser = null;
+        window.isLoggedIn = false;
 
         // Rewards Data
         const rewards = [
@@ -326,14 +341,6 @@
         ];
 
         // Utility Functions
-        function hashPassword(password) {
-            return btoa(password + 'leismo_salt');
-        }
-
-        function verifyPassword(inputPassword, hashedPassword) {
-            return hashPassword(inputPassword) === hashedPassword;
-        }
-
         function generateCouponCode() {
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
             let result = 'LEISMO';
@@ -343,127 +350,39 @@
             return result;
         }
 
-        function saveToStorage() {
-            localStorage.setItem('leismo_users', JSON.stringify(users));
-            if (currentUser) {
-                localStorage.setItem('leismo_current_user', JSON.stringify(currentUser));
-            } else {
-                localStorage.removeItem('leismo_current_user');
-            }
-        }
-
-        function loadFromStorage() {
+        // Initialize Admin User
+        async function initializeAdminUser() {
             try {
-                const usersData = localStorage.getItem('leismo_users');
-                const currentUserData = localStorage.getItem('leismo_current_user');
+                const adminRef = doc(db, 'users', 'admin_001');
+                const adminSnap = await getDoc(adminRef);
                 
-                if (usersData) {
-                    users = JSON.parse(usersData);
-                }
-                
-                if (currentUserData) {
-                    currentUser = JSON.parse(currentUserData);
-                    isLoggedIn = true;
-                    updateAuthUI();
-                }
-
-                // Add admin default if not exists
-                const hasAdmin = users.some(u => u.email === 'admin@leismo.com');
-                if (!hasAdmin) {
+                if (!adminSnap.exists()) {
                     const adminUser = {
-                        id: 'admin_001',
+                        uid: 'admin_001',
                         name: 'Admin Leismo',
                         email: 'admin@leismo.com',
-                        password: hashPassword('admin123'),
                         points: 99999,
                         tier: 'Platinum',
                         isAdmin: true,
                         coupons: [],
                         createdAt: new Date().toISOString()
                     };
-                    users.push(adminUser);
-                    saveToStorage();
+                    
+                    await setDoc(adminRef, adminUser);
+                    console.log('Admin user created');
                 }
             } catch (error) {
-                console.error('Error loading from storage:', error);
-            }
-        }
-
-        // Page Navigation
-        function showPage(pageName) {
-            // Hide all pages
-            const pages = ['home', 'login', 'register', 'loyalty'];
-            pages.forEach(page => {
-                document.getElementById(`page-${page}`).classList.add('hidden');
-            });
-
-            // Show selected page
-            document.getElementById(`page-${pageName}`).classList.remove('hidden');
-
-            // Update navigation
-            updateNavigation(pageName);
-
-            // Special handling for loyalty page
-            if (pageName === 'loyalty') {
-                if (!isLoggedIn) {
-                    showPage('login');
-                    return;
-                }
-                updateLoyaltyPage();
-            }
-        }
-
-        function updateNavigation(currentPage) {
-            const navHome = document.getElementById('nav-home');
-            const navLoyalty = document.getElementById('nav-loyalty');
-
-            // Reset colors
-            navHome.style.color = currentPage === 'home' ? '#B19D87' : '#6B7280';
-            if (navLoyalty) {
-                navLoyalty.style.color = currentPage === 'loyalty' ? '#B19D87' : '#6B7280';
-            }
-        }
-
-        function updateAuthUI() {
-            const authButtons = document.getElementById('auth-buttons');
-            const userInfo = document.getElementById('user-info');
-            const navLoyalty = document.getElementById('nav-loyalty');
-            const homeAuthButtons = document.getElementById('home-auth-buttons');
-            const homeLoyaltyButton = document.getElementById('home-loyalty-button');
-
-            if (isLoggedIn && currentUser) {
-                // Header
-                authButtons.classList.add('hidden');
-                userInfo.classList.remove('hidden');
-                navLoyalty.classList.remove('hidden');
-                
-                // Update user info
-                document.getElementById('user-name').textContent = currentUser.name;
-                document.getElementById('user-points').textContent = currentUser.points?.toLocaleString() || '0';
-
-                // Home page
-                homeAuthButtons.classList.add('hidden');
-                homeLoyaltyButton.classList.remove('hidden');
-            } else {
-                // Header
-                authButtons.classList.remove('hidden');
-                userInfo.classList.add('hidden');
-                navLoyalty.classList.add('hidden');
-
-                // Home page
-                homeAuthButtons.classList.remove('hidden');
-                homeLoyaltyButton.classList.add('hidden');
+                console.error('Error initializing admin:', error);
             }
         }
 
         // Authentication Functions
-        async function handleLogin(event) {
+        window.handleLogin = async function(event) {
             event.preventDefault();
             
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
             const submitBtn = document.getElementById('login-submit');
-            const errorDiv = document.getElementById('login-error');
 
             if (!email || !password) {
                 showError('login-error', 'กรุณากรอกอีเมลและรหัสผ่าน');
@@ -474,36 +393,48 @@
             submitBtn.disabled = true;
 
             try {
-                const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
-                
-                if (!user) {
-                    throw new Error('ไม่พบผู้ใช้นี้');
+                // Check if admin login
+                if (email === 'admin@leismo.com' && password === 'admin123') {
+                    // Load admin user from Firestore
+                    const adminRef = doc(db, 'users', 'admin_001');
+                    const adminSnap = await getDoc(adminRef);
+                    
+                    if (adminSnap.exists()) {
+                        window.currentUser = adminSnap.data();
+                        window.isLoggedIn = true;
+                        updateAuthUI();
+                        hideError('login-error');
+                        alert('เข้าสู่ระบบสำเร็จ!');
+                        showPage('home');
+                    }
+                } else {
+                    // Regular user login with Firebase Auth
+                    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                    const user = userCredential.user;
+                    
+                    // Load user data from Firestore
+                    const userRef = doc(db, 'users', user.uid);
+                    const userSnap = await getDoc(userRef);
+                    
+                    if (userSnap.exists()) {
+                        window.currentUser = userSnap.data();
+                        window.isLoggedIn = true;
+                        updateAuthUI();
+                        hideError('login-error');
+                        alert('เข้าสู่ระบบสำเร็จ!');
+                        showPage('home');
+                    }
                 }
-
-                if (!verifyPassword(password, user.password)) {
-                    throw new Error('รหัสผ่านไม่ถูกต้อง');
-                }
-
-                currentUser = { ...user };
-                delete currentUser.password;
-                isLoggedIn = true;
-                
-                saveToStorage();
-                updateAuthUI();
-                hideError('login-error');
-                
-                alert('เข้าสู่ระบบสำเร็จ!');
-                showPage('home');
-                
             } catch (error) {
-                showError('login-error', error.message);
+                console.error('Login error:', error);
+                showError('login-error', 'อีเมลหรือรหัสผ่านไม่ถูกต้อง');
             } finally {
                 submitBtn.textContent = 'เข้าสู่ระบบ';
                 submitBtn.disabled = false;
             }
-        }
+        };
 
-        async function handleRegister(event) {
+        window.handleRegister = async function(event) {
             event.preventDefault();
             
             const name = document.getElementById('register-name').value;
@@ -526,16 +457,15 @@
             submitBtn.disabled = true;
 
             try {
-                const existingUser = users.find(u => u.email.toLowerCase() === email.toLowerCase());
-                if (existingUser) {
-                    throw new Error('อีเมลนี้มีผู้ใช้แล้ว');
-                }
+                // Create user with Firebase Auth
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
 
-                const newUser = {
-                    id: 'user_' + Date.now(),
+                // Create user document in Firestore
+                const userData = {
+                    uid: user.uid,
                     name: name,
-                    email: email.toLowerCase(),
-                    password: hashPassword(password),
+                    email: email,
                     birthDate: birthDate,
                     points: 100,
                     tier: 'Bronze',
@@ -544,12 +474,10 @@
                     createdAt: new Date().toISOString()
                 };
 
-                users.push(newUser);
-                currentUser = { ...newUser };
-                delete currentUser.password;
-                isLoggedIn = true;
+                await setDoc(doc(db, 'users', user.uid), userData);
 
-                saveToStorage();
+                window.currentUser = userData;
+                window.isLoggedIn = true;
                 updateAuthUI();
                 hideError('register-error');
                 
@@ -557,42 +485,143 @@
                 showPage('home');
                 
             } catch (error) {
-                showError('register-error', error.message);
+                console.error('Registration error:', error);
+                if (error.code === 'auth/email-already-in-use') {
+                    showError('register-error', 'อีเมลนี้มีผู้ใช้แล้ว');
+                } else {
+                    showError('register-error', 'เกิดข้อผิดพลาดในการสมัครสมาชิก');
+                }
             } finally {
                 submitBtn.textContent = 'สมัครสมาชิก';
                 submitBtn.disabled = false;
             }
+        };
+
+        window.logout = async function() {
+            try {
+                if (window.currentUser && !window.currentUser.isAdmin) {
+                    await signOut(auth);
+                }
+                window.currentUser = null;
+                window.isLoggedIn = false;
+                updateAuthUI();
+                showPage('home');
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        };
+
+        // Loyalty Functions
+        window.redeemReward = async function(rewardId) {
+            if (!window.currentUser) return;
+
+            const reward = rewards.find(r => r.id === rewardId);
+            if (!reward) return;
+
+            if (window.currentUser.points < reward.points) {
+                alert('แต้มไม่พอสำหรับแลกของรางวัลนี้');
+                return;
+            }
+
+            try {
+                const couponCode = generateCouponCode();
+                const newCoupon = {
+                    id: Date.now().toString(),
+                    code: couponCode,
+                    name: reward.name,
+                    type: reward.type,
+                    value: reward.value,
+                    maxDiscount: reward.maxDiscount || null,
+                    used: false,
+                    createdDate: new Date().toLocaleDateString('th-TH'),
+                    expiryDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toLocaleDateString('th-TH')
+                };
+
+                // Update user data
+                window.currentUser.points -= reward.points;
+                window.currentUser.coupons = window.currentUser.coupons || [];
+                window.currentUser.coupons.push(newCoupon);
+
+                // Update in Firestore
+                const userRef = doc(db, 'users', window.currentUser.uid);
+                await updateDoc(userRef, {
+                    points: window.currentUser.points,
+                    coupons: window.currentUser.coupons
+                });
+
+                updateLoyaltyPage();
+                updateAuthUI();
+
+                alert(`🎉 แลกของรางวัลสำเร็จ!\nโค้ดคูปอง: ${couponCode}\nกรุณาบันทึกโค้ดนี้ไว้`);
+            } catch (error) {
+                console.error('Redeem error:', error);
+                alert('เกิดข้อผิดพลาดในการแลกของรางวัล');
+            }
+        };
+
+        // Page Navigation Functions
+        window.showPage = function(pageName) {
+            const pages = ['home', 'login', 'register', 'loyalty'];
+            pages.forEach(page => {
+                document.getElementById(`page-${page}`).classList.add('hidden');
+            });
+
+            document.getElementById(`page-${pageName}`).classList.remove('hidden');
+            updateNavigation(pageName);
+
+            if (pageName === 'loyalty') {
+                if (!window.isLoggedIn) {
+                    showPage('login');
+                    return;
+                }
+                updateLoyaltyPage();
+            }
+        };
+
+        function updateNavigation(currentPage) {
+            const navHome = document.getElementById('nav-home');
+            const navLoyalty = document.getElementById('nav-loyalty');
+
+            navHome.style.color = currentPage === 'home' ? '#B19D87' : '#6B7280';
+            if (navLoyalty) {
+                navLoyalty.style.color = currentPage === 'loyalty' ? '#B19D87' : '#6B7280';
+            }
         }
 
-        function logout() {
-            currentUser = null;
-            isLoggedIn = false;
-            localStorage.removeItem('leismo_current_user');
-            updateAuthUI();
-            showPage('home');
-        }
+        function updateAuthUI() {
+            const authButtons = document.getElementById('auth-buttons');
+            const userInfo = document.getElementById('user-info');
+            const navLoyalty = document.getElementById('nav-loyalty');
+            const homeAuthButtons = document.getElementById('home-auth-buttons');
+            const homeLoyaltyButton = document.getElementById('home-loyalty-button');
 
-        function showError(elementId, message) {
-            const errorDiv = document.getElementById(elementId);
-            errorDiv.textContent = message;
-            errorDiv.classList.remove('hidden');
-        }
+            if (window.isLoggedIn && window.currentUser) {
+                authButtons.classList.add('hidden');
+                userInfo.classList.remove('hidden');
+                navLoyalty.classList.remove('hidden');
+                
+                document.getElementById('user-name').textContent = window.currentUser.name;
+                document.getElementById('user-points').textContent = window.currentUser.points?.toLocaleString() || '0';
 
-        function hideError(elementId) {
-            const errorDiv = document.getElementById(elementId);
-            errorDiv.classList.add('hidden');
+                homeAuthButtons.classList.add('hidden');
+                homeLoyaltyButton.classList.remove('hidden');
+            } else {
+                authButtons.classList.remove('hidden');
+                userInfo.classList.add('hidden');
+                navLoyalty.classList.add('hidden');
+
+                homeAuthButtons.classList.remove('hidden');
+                homeLoyaltyButton.classList.add('hidden');
+            }
         }
 
         // Loyalty Page Functions
-        function showLoyaltyTab(tabName) {
-            // Hide all tab content
+        window.showLoyaltyTab = function(tabName) {
             const contents = document.querySelectorAll('.loyalty-content');
             contents.forEach(content => content.classList.add('hidden'));
 
-            // Show selected tab content
             document.getElementById(`loyalty-${tabName}`).classList.remove('hidden');
 
-            // Update tab buttons
             const tabs = document.querySelectorAll('.loyalty-tab');
             tabs.forEach(tab => {
                 tab.style.color = '#6B7280';
@@ -600,33 +629,27 @@
                 tab.classList.remove('border-b-2');
             });
 
-            // Highlight active tab
             event.target.style.color = '#B19D87';
             event.target.style.borderColor = '#B19D87';
             event.target.classList.add('border-b-2');
 
-            // Load specific tab content
             if (tabName === 'rewards') {
                 loadRewards();
             } else if (tabName === 'coupons') {
                 loadCoupons();
             }
-        }
+        };
 
         function updateLoyaltyPage() {
-            if (!currentUser) return;
+            if (!window.currentUser) return;
 
-            document.getElementById('loyalty-user-name').textContent = currentUser.name;
-            document.getElementById('loyalty-user-tier').textContent = currentUser.tier;
-            document.getElementById('loyalty-user-points').textContent = currentUser.points?.toLocaleString() || '0';
+            document.getElementById('loyalty-user-name').textContent = window.currentUser.name;
+            document.getElementById('loyalty-user-tier').textContent = window.currentUser.tier;
+            document.getElementById('loyalty-user-points').textContent = window.currentUser.points?.toLocaleString() || '0';
 
-            // Update dashboard
-            document.getElementById('dashboard-tier').textContent = currentUser.tier;
-            document.getElementById('dashboard-points').textContent = currentUser.points?.toLocaleString() || '0';
-            document.getElementById('dashboard-coupons').textContent = (currentUser.coupons || []).filter(c => !c.used).length;
-
-            // Show dashboard tab by default
-            showLoyaltyTab('dashboard');
+            document.getElementById('dashboard-tier').textContent = window.currentUser.tier;
+            document.getElementById('dashboard-points').textContent = window.currentUser.points?.toLocaleString() || '0';
+            document.getElementById('dashboard-coupons').textContent = (window.currentUser.coupons || []).filter(c => !c.used).length;
         }
 
         function loadRewards() {
@@ -634,7 +657,7 @@
             container.innerHTML = '';
 
             rewards.forEach(reward => {
-                const canRedeem = currentUser && currentUser.points >= reward.points;
+                const canRedeem = window.currentUser && window.currentUser.points >= reward.points;
                 const rewardDiv = document.createElement('div');
                 rewardDiv.className = 'border rounded-lg p-6 text-center hover:shadow-lg transition-shadow';
                 rewardDiv.style.borderColor = '#DACFBD';
@@ -662,7 +685,7 @@
 
         function loadCoupons() {
             const container = document.getElementById('coupons-container');
-            const userCoupons = currentUser?.coupons || [];
+            const userCoupons = window.currentUser?.coupons || [];
 
             if (userCoupons.length === 0) {
                 container.innerHTML = `
@@ -721,53 +744,51 @@
             });
         }
 
-        function redeemReward(rewardId) {
-            if (!currentUser) return;
+        // Error handling functions
+        function showError(elementId, message) {
+            const errorDiv = document.getElementById(elementId);
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+        }
 
-            const reward = rewards.find(r => r.id === rewardId);
-            if (!reward) return;
-
-            if (currentUser.points < reward.points) {
-                alert('แต้มไม่พอสำหรับแลกของรางวัลนี้');
-                return;
-            }
-
-            const couponCode = generateCouponCode();
-            const newCoupon = {
-                id: Date.now().toString(),
-                code: couponCode,
-                name: reward.name,
-                type: reward.type,
-                value: reward.value,
-                maxDiscount: reward.maxDiscount || null,
-                used: false,
-                createdDate: new Date().toLocaleDateString('th-TH'),
-                expiryDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toLocaleDateString('th-TH')
-            };
-
-            // Update user data
-            currentUser.points -= reward.points;
-            currentUser.coupons = currentUser.coupons || [];
-            currentUser.coupons.push(newCoupon);
-
-            // Update stored user in users array
-            const userIndex = users.findIndex(u => u.id === currentUser.id);
-            if (userIndex !== -1) {
-                users[userIndex] = { ...currentUser, password: users[userIndex].password };
-            }
-
-            saveToStorage();
-            updateLoyaltyPage();
-            updateAuthUI();
-
-            alert(`🎉 แลกของรางวัลสำเร็จ!\nโค้ดคูปอง: ${couponCode}\nกรุณาบันทึกโค้ดนี้ไว้`);
+        function hideError(elementId) {
+            const errorDiv = document.getElementById(elementId);
+            errorDiv.classList.add('hidden');
         }
 
         // Initialize the application
-        function init() {
-            loadFromStorage();
-            updateAuthUI();
-            showPage('home');
+        async function init() {
+            try {
+                // Show loading screen
+                document.getElementById('loading-screen').classList.remove('hidden');
+                
+                // Initialize admin user
+                await initializeAdminUser();
+                
+                // Listen for auth state changes
+                onAuthStateChanged(auth, async (user) => {
+                    if (user && user.email !== 'admin@leismo.com') {
+                        // Load user data from Firestore
+                        const userRef = doc(db, 'users', user.uid);
+                        const userSnap = await getDoc(userRef);
+                        
+                        if (userSnap.exists()) {
+                            window.currentUser = userSnap.data();
+                            window.isLoggedIn = true;
+                            updateAuthUI();
+                        }
+                    }
+                });
+
+                // Hide loading screen and show home page
+                document.getElementById('loading-screen').classList.add('hidden');
+                showPage('home');
+                
+            } catch (error) {
+                console.error('Initialization error:', error);
+                document.getElementById('loading-screen').classList.add('hidden');
+                showPage('home');
+            }
         }
 
         // Start the application
