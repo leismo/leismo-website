@@ -39,37 +39,41 @@
     <!-- Header -->
     <header class="bg-white shadow-sm sticky top-0 z-40 border-b secondary-border">
         <div class="container mx-auto px-4">
-            <div class="flex justify-between items-center py-4">
+            <div class="relative flex justify-between items-center py-4">
                 <div class="flex items-center gap-8">
-                    <div class="cursor-pointer flex items-center justify-center h-12" onclick="showPage('home')">
-                        <img src="https://i.ibb.co/JWHq77Fr/Leismo-Primarylogo-MBGtypo.png" alt="Leismo Logo" class="h-8 w-auto">
+                    <!-- Logo Container with fixed positioning -->
+                    <div class="cursor-pointer relative" style="height: 40px;" onclick="showPage('home')">
+                        <img src="https://i.ibb.co/JWHq77Fr/Leismo-Primarylogo-MBGtypo.png" alt="Leismo Logo" class="h-8 w-auto absolute" style="top: 50%; transform: translateY(-50%);">
                     </div>
-                    <nav class="hidden md:flex items-center gap-8" style="height: 48px;">
-                        <button onclick="showPage('home')" class="font-medium transition-colors text-gray-700 hover:opacity-75 flex items-center h-full" id="nav-home">
+                    
+                    <!-- Navigation aligned to logo center -->
+                    <nav class="hidden md:flex items-center gap-8 relative" style="height: 40px;">
+                        <button onclick="showPage('home')" class="font-medium transition-colors text-gray-700 hover:opacity-75 absolute" style="top: 50%; transform: translateY(-50%);" id="nav-home">
                             หน้าแรก
                         </button>
-                        <button onclick="showPage('loyalty')" class="font-medium transition-colors text-gray-700 hover:opacity-75 flex items-center gap-2 h-full hidden" id="nav-loyalty">
+                        <button onclick="showPage('loyalty')" class="font-medium transition-colors text-gray-700 hover:opacity-75 flex items-center gap-2 absolute hidden" style="top: 50%; transform: translateY(-50%); left: 80px;" id="nav-loyalty">
                             <span>⭐</span>
                             Loyalty Card
                         </button>
-                        <button onclick="showPage('admin')" class="font-medium transition-colors text-gray-700 hover:opacity-75 flex items-center gap-2 h-full hidden" id="nav-admin">
+                        <button onclick="showPage('admin')" class="font-medium transition-colors text-gray-700 hover:opacity-75 flex items-center gap-2 absolute hidden" style="top: 50%; transform: translateY(-50%); left: 200px;" id="nav-admin">
                             <span>⚙️</span>
                             Admin Panel
                         </button>
                     </nav>
                 </div>
                 
-                <div class="flex items-center gap-4 h-12" id="header-auth">
-                    <div class="flex items-center gap-4 h-full" id="auth-buttons">
-                        <button onclick="showPage('login')" class="hover:opacity-90 transition-colors font-medium brand-color flex items-center h-full">
+                <!-- Right side buttons aligned to logo center -->
+                <div class="flex items-center gap-4 relative" style="height: 40px;" id="header-auth">
+                    <div class="flex items-center gap-4 absolute" style="top: 50%; transform: translateY(-50%); right: 0;" id="auth-buttons">
+                        <button onclick="showPage('login')" class="hover:opacity-90 transition-colors font-medium brand-color">
                             เข้าสู่ระบบ
                         </button>
-                        <button onclick="showPage('register')" class="bg-transparent border-2 px-4 py-2 rounded-lg hover:bg-opacity-10 transition-colors font-medium brand-color brand-border flex items-center">
+                        <button onclick="showPage('register')" class="bg-transparent border-2 px-4 py-2 rounded-lg hover:bg-opacity-10 transition-colors font-medium brand-color brand-border">
                             สมัครสมาชิก
                         </button>
                     </div>
                     
-                    <div class="flex items-center gap-4 h-full hidden" id="user-info">
+                    <div class="flex items-center gap-4 absolute hidden" style="top: 50%; transform: translateY(-50%); right: 0;" id="user-info">
                         <div class="flex items-center gap-2">
                             <span class="text-yellow-500">⭐</span>
                             <span class="font-semibold brand-color" id="user-points">0</span>
@@ -79,7 +83,7 @@
                             <span class="text-gray-600">สวัสดี</span>
                             <span class="font-semibold brand-color" id="user-name"></span>
                         </div>
-                        <button onclick="logout()" class="hover:opacity-90 transition-colors font-medium text-gray-600 hover:text-red-600 flex items-center h-full">
+                        <button onclick="logout()" class="hover:opacity-90 transition-colors font-medium text-gray-600 hover:text-red-600">
                             ออกจากระบบ
                         </button>
                     </div>
