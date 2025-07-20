@@ -41,18 +41,18 @@
         <div class="container mx-auto px-4">
             <div class="flex justify-between items-center py-4">
                 <div class="flex items-center gap-8">
-                    <!-- Logo with proper centering -->
+                    <!-- Logo with custom positioning -->
                     <div class="cursor-pointer" onclick="showPage('home')">
-                        <img src="https://i.ibb.co/JWHq77Fr/Leismo-Primarylogo-MBGtypo.png" alt="Leismo Logo" class="h-8 w-auto" style="vertical-align: middle;">
+                        <img src="https://i.ibb.co/JWHq77Fr/Leismo-Primarylogo-MBGtypo.png" alt="Leismo Logo" class="h-8 w-auto" style="vertical-align: middle; margin-top: -7px;">
                     </div>
                     
                     <!-- Navigation aligned to logo vertical center -->
                     <nav class="hidden md:flex items-center gap-8">
-                        <button onclick="showPage('home')" class="font-medium transition-colors text-gray-700 hover:opacity-75 whitespace-nowrap" style="line-height: 32px;" id="nav-home">
+                        <button onclick="showPage('home')" class="font-medium transition-colors text-gray-700 hover:opacity-75 whitespace-nowrap" style="line-height: 32px; margin-top: 4px;" id="nav-home">
                             หน้าแรก
                         </button>
-                        <button onclick="showPage('loyalty')" class="font-medium transition-colors text-gray-700 hover:opacity-75 flex items-center gap-2 whitespace-nowrap hidden" style="line-height: 32px;" id="nav-loyalty">
-                            <span>⭐</span>
+                        <button onclick="showPage('loyalty')" class="font-medium transition-colors text-gray-700 hover:opacity-75 flex items-center gap-2 whitespace-nowrap hidden" style="line-height: 32px; margin-top: 4px;" id="nav-loyalty">
+                            <span style="margin-top: 2px;">⭐</span>
                             <span>Loyalty Card</span>
                         </button>
                         <button onclick="showPage('admin')" class="font-medium transition-colors text-gray-700 hover:opacity-75 flex items-center gap-2 whitespace-nowrap hidden" style="line-height: 32px;" id="nav-admin">
