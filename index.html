@@ -41,35 +41,35 @@
         <div class="container mx-auto px-4">
             <div class="flex justify-between items-center py-4">
                 <div class="flex items-center gap-8">
-                    <div class="cursor-pointer flex items-center" onclick="showPage('home')">
+                    <div class="cursor-pointer flex items-center justify-center h-12" onclick="showPage('home')">
                         <img src="https://i.ibb.co/JWHq77Fr/Leismo-Primarylogo-MBGtypo.png" alt="Leismo Logo" class="h-8 w-auto">
                     </div>
-                    <nav class="hidden md:flex items-center gap-8">
-                        <button onclick="showPage('home')" class="font-medium transition-colors text-gray-700 hover:opacity-75 py-2" id="nav-home">
+                    <nav class="hidden md:flex items-center gap-8" style="height: 48px;">
+                        <button onclick="showPage('home')" class="font-medium transition-colors text-gray-700 hover:opacity-75 flex items-center h-full" id="nav-home">
                             หน้าแรก
                         </button>
-                        <button onclick="showPage('loyalty')" class="font-medium transition-colors text-gray-700 hover:opacity-75 flex items-center gap-2 py-2 hidden" id="nav-loyalty">
+                        <button onclick="showPage('loyalty')" class="font-medium transition-colors text-gray-700 hover:opacity-75 flex items-center gap-2 h-full hidden" id="nav-loyalty">
                             <span>⭐</span>
                             Loyalty Card
                         </button>
-                        <button onclick="showPage('admin')" class="font-medium transition-colors text-gray-700 hover:opacity-75 flex items-center gap-2 py-2 hidden" id="nav-admin">
+                        <button onclick="showPage('admin')" class="font-medium transition-colors text-gray-700 hover:opacity-75 flex items-center gap-2 h-full hidden" id="nav-admin">
                             <span>⚙️</span>
                             Admin Panel
                         </button>
                     </nav>
                 </div>
                 
-                <div class="flex items-center gap-4" id="header-auth">
-                    <div class="flex items-center gap-4" id="auth-buttons">
-                        <button onclick="showPage('login')" class="hover:opacity-90 transition-colors font-medium brand-color">
+                <div class="flex items-center gap-4 h-12" id="header-auth">
+                    <div class="flex items-center gap-4 h-full" id="auth-buttons">
+                        <button onclick="showPage('login')" class="hover:opacity-90 transition-colors font-medium brand-color flex items-center h-full">
                             เข้าสู่ระบบ
                         </button>
-                        <button onclick="showPage('register')" class="bg-transparent border-2 px-4 py-2 rounded-lg hover:bg-opacity-10 transition-colors font-medium brand-color brand-border">
+                        <button onclick="showPage('register')" class="bg-transparent border-2 px-4 py-2 rounded-lg hover:bg-opacity-10 transition-colors font-medium brand-color brand-border flex items-center">
                             สมัครสมาชิก
                         </button>
                     </div>
                     
-                    <div class="flex items-center gap-4 hidden" id="user-info">
+                    <div class="flex items-center gap-4 h-full hidden" id="user-info">
                         <div class="flex items-center gap-2">
                             <span class="text-yellow-500">⭐</span>
                             <span class="font-semibold brand-color" id="user-points">0</span>
@@ -79,7 +79,7 @@
                             <span class="text-gray-600">สวัสดี</span>
                             <span class="font-semibold brand-color" id="user-name"></span>
                         </div>
-                        <button onclick="logout()" class="hover:opacity-90 transition-colors font-medium text-gray-600 hover:text-red-600">
+                        <button onclick="logout()" class="hover:opacity-90 transition-colors font-medium text-gray-600 hover:text-red-600 flex items-center h-full">
                             ออกจากระบบ
                         </button>
                     </div>
