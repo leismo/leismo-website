@@ -41,18 +41,18 @@
         <div class="container mx-auto px-4">
             <div class="flex justify-between items-center py-4">
                 <div class="flex items-center gap-8">
-                    <div class="cursor-pointer" onclick="showPage('home')">
+                    <div class="cursor-pointer flex items-center" onclick="showPage('home')">
                         <img src="https://i.ibb.co/JWHq77Fr/Leismo-Primarylogo-MBGtypo.png" alt="Leismo Logo" class="h-8 w-auto">
                     </div>
-                    <nav class="hidden md:flex gap-8">
-                        <button onclick="showPage('home')" class="font-medium transition-colors text-gray-700 hover:opacity-75 py-2 px-3 rounded-lg" id="nav-home">
+                    <nav class="hidden md:flex items-center gap-8">
+                        <button onclick="showPage('home')" class="font-medium transition-colors text-gray-700 hover:opacity-75 py-2" id="nav-home">
                             หน้าแรก
                         </button>
-                        <button onclick="showPage('loyalty')" class="font-medium transition-colors text-gray-700 hover:opacity-75 flex items-center gap-2 py-2 px-3 rounded-lg hidden" id="nav-loyalty">
+                        <button onclick="showPage('loyalty')" class="font-medium transition-colors text-gray-700 hover:opacity-75 flex items-center gap-2 py-2 hidden" id="nav-loyalty">
                             <span>⭐</span>
                             Loyalty Card
                         </button>
-                        <button onclick="showPage('admin')" class="font-medium transition-colors text-gray-700 hover:opacity-75 flex items-center gap-2 py-2 px-3 rounded-lg hidden" id="nav-admin">
+                        <button onclick="showPage('admin')" class="font-medium transition-colors text-gray-700 hover:opacity-75 flex items-center gap-2 py-2 hidden" id="nav-admin">
                             <span>⚙️</span>
                             Admin Panel
                         </button>
@@ -61,7 +61,7 @@
                 
                 <div class="flex items-center gap-4" id="header-auth">
                     <div class="flex items-center gap-4" id="auth-buttons">
-                        <button onclick="showPage('login')" class="hover:opacity-90 transition-colors font-medium py-2 px-4 rounded-lg brand-color">
+                        <button onclick="showPage('login')" class="hover:opacity-90 transition-colors font-medium brand-color">
                             เข้าสู่ระบบ
                         </button>
                         <button onclick="showPage('register')" class="bg-transparent border-2 px-4 py-2 rounded-lg hover:bg-opacity-10 transition-colors font-medium brand-color brand-border">
@@ -70,7 +70,7 @@
                     </div>
                     
                     <div class="flex items-center gap-4 hidden" id="user-info">
-                        <div class="flex items-center gap-2 px-3 py-2 bg-yellow-50 rounded-lg">
+                        <div class="flex items-center gap-2">
                             <span class="text-yellow-500">⭐</span>
                             <span class="font-semibold brand-color" id="user-points">0</span>
                             <span class="text-sm text-gray-600">แต้ม</span>
@@ -79,7 +79,7 @@
                             <span class="text-gray-600">สวัสดี</span>
                             <span class="font-semibold brand-color" id="user-name"></span>
                         </div>
-                        <button onclick="logout()" class="hover:opacity-90 transition-colors font-medium py-2 px-4 rounded-lg text-gray-600 hover:text-red-600">
+                        <button onclick="logout()" class="hover:opacity-90 transition-colors font-medium text-gray-600 hover:text-red-600">
                             ออกจากระบบ
                         </button>
                     </div>
@@ -776,7 +776,6 @@
             [navHome, navLoyalty, navAdmin].forEach(nav => {
                 if (nav) {
                     nav.style.color = '#6B7280';
-                    nav.style.backgroundColor = 'transparent';
                 }
             });
 
@@ -784,7 +783,6 @@
             const currentNav = document.getElementById(`nav-${currentPage}`);
             if (currentNav) {
                 currentNav.style.color = '#B19D87';
-                currentNav.style.backgroundColor = '#F9F7F4';
             }
         }
 
