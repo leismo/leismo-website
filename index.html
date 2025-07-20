@@ -44,15 +44,15 @@
                     <div class="cursor-pointer" onclick="showPage('home')">
                         <img src="https://i.ibb.co/JWHq77Fr/Leismo-Primarylogo-MBGtypo.png" alt="Leismo Logo" class="h-8 w-auto">
                     </div>
-                    <nav class="hidden md:flex gap-6">
-                        <button onclick="showPage('home')" class="font-medium transition-colors text-gray-700 hover:opacity-75" id="nav-home">
+                    <nav class="hidden md:flex gap-8">
+                        <button onclick="showPage('home')" class="font-medium transition-colors text-gray-700 hover:opacity-75 py-2 px-3 rounded-lg" id="nav-home">
                             หน้าแรก
                         </button>
-                        <button onclick="showPage('loyalty')" class="font-medium transition-colors text-gray-700 hover:opacity-75 flex items-center gap-2 hidden" id="nav-loyalty">
+                        <button onclick="showPage('loyalty')" class="font-medium transition-colors text-gray-700 hover:opacity-75 flex items-center gap-2 py-2 px-3 rounded-lg hidden" id="nav-loyalty">
                             <span>⭐</span>
                             Loyalty Card
                         </button>
-                        <button onclick="showPage('admin')" class="font-medium transition-colors text-gray-700 hover:opacity-75 flex items-center gap-2 hidden" id="nav-admin">
+                        <button onclick="showPage('admin')" class="font-medium transition-colors text-gray-700 hover:opacity-75 flex items-center gap-2 py-2 px-3 rounded-lg hidden" id="nav-admin">
                             <span>⚙️</span>
                             Admin Panel
                         </button>
@@ -60,22 +60,26 @@
                 </div>
                 
                 <div class="flex items-center gap-4" id="header-auth">
-                    <div class="flex gap-4" id="auth-buttons">
-                        <button onclick="showPage('login')" class="hover:opacity-90 transition-colors font-light brand-color">
+                    <div class="flex items-center gap-4" id="auth-buttons">
+                        <button onclick="showPage('login')" class="hover:opacity-90 transition-colors font-medium py-2 px-4 rounded-lg brand-color">
                             เข้าสู่ระบบ
                         </button>
-                        <button onclick="showPage('register')" class="bg-transparent border px-4 py-2 rounded-full hover:bg-opacity-10 transition-colors brand-color brand-border">
+                        <button onclick="showPage('register')" class="bg-transparent border-2 px-4 py-2 rounded-lg hover:bg-opacity-10 transition-colors font-medium brand-color brand-border">
                             สมัครสมาชิก
                         </button>
                     </div>
                     
                     <div class="flex items-center gap-4 hidden" id="user-info">
-                        <div class="flex items-center gap-2 text-sm brand-color">
-                            <span>⭐</span>
-                            <span id="user-points">0</span>
+                        <div class="flex items-center gap-2 px-3 py-2 bg-yellow-50 rounded-lg">
+                            <span class="text-yellow-500">⭐</span>
+                            <span class="font-semibold brand-color" id="user-points">0</span>
+                            <span class="text-sm text-gray-600">แต้ม</span>
                         </div>
-                        <span class="hidden sm:inline brand-color" id="user-name"></span>
-                        <button onclick="logout()" class="hover:opacity-90 transition-colors font-light brand-color">
+                        <div class="hidden sm:flex items-center gap-2">
+                            <span class="text-gray-600">สวัสดี</span>
+                            <span class="font-semibold brand-color" id="user-name"></span>
+                        </div>
+                        <button onclick="logout()" class="hover:opacity-90 transition-colors font-medium py-2 px-4 rounded-lg text-gray-600 hover:text-red-600">
                             ออกจากระบบ
                         </button>
                     </div>
@@ -768,12 +772,19 @@
             const navLoyalty = document.getElementById('nav-loyalty');
             const navAdmin = document.getElementById('nav-admin');
 
-            navHome.style.color = currentPage === 'home' ? '#B19D87' : '#6B7280';
-            if (navLoyalty) {
-                navLoyalty.style.color = currentPage === 'loyalty' ? '#B19D87' : '#6B7280';
-            }
-            if (navAdmin) {
-                navAdmin.style.color = currentPage === 'admin' ? '#B19D87' : '#6B7280';
+            // Reset all navigation styles
+            [navHome, navLoyalty, navAdmin].forEach(nav => {
+                if (nav) {
+                    nav.style.color = '#6B7280';
+                    nav.style.backgroundColor = 'transparent';
+                }
+            });
+
+            // Highlight current page
+            const currentNav = document.getElementById(`nav-${currentPage}`);
+            if (currentNav) {
+                currentNav.style.color = '#B19D87';
+                currentNav.style.backgroundColor = '#F9F7F4';
             }
         }
 
