@@ -1,4 +1,299 @@
-<!DOCTYPE html>
+<p><strong>มูลค่า:</strong> ${coupon.type === 'coupon' ? `฿${coupon.value}` : `${coupon.value}%`}</p>
+                                <p><strong>ได้รับ:</strong> ${coupon.createdDate}</p>
+                                <p><strong>หมดอายุ:</strong> ${coupon.expiryDate}</p>
+                                <p><strong>สถานะ:</strong> <span class="${result.status === 'valid' ? 'text-green-600' : result.status === 'used' ? 'text-red-600' : 'text-orange-600'}">${statusText}</span></p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <h4 class="font-semibold text-gray-800">ข้อมูลลูกค้า</h4>
+                            <div class="space-y-2 text-sm">
+                                <p><strong>ชื่อ:</strong> ${owner.name}</p>
+                                <p><strong>อีเมล:</strong> ${owner.email}</p>
+                                <p><strong>ระดับ:</strong> ${owner.tier}</p>
+                                <p><strong>แต้มปัจจุบัน:</strong> ${(owner.points || 0).toLocaleString()} แต้ม</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${canUse ? `
+                        <div class="mt-6 text-center">
+                            <button onclick="useCoupon('${coupon.code}', '${owner.uid}')" class="bg-green-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-600 transition-colors">
+                                ✅ ยืนยันการใช้คูปอง
+                            </button>
+                        </div>
+                    ` : ''}
+
+                    ${result.status === 'used' ? `
+                        <div class="mt-4 p-3 bg-red-100 rounded-lg">
+                            <p class="text-red-800 text-sm text-center">⚠️ คูปองนี้ถูกใช้ไปแล้ว ไม่สามารถใช้ซ้ำได้</p>
+                        </div>
+                    ` : ''}
+
+                    ${result.status === 'expired' ? `
+                        <div class="mt-4 p-3 bg-orange-100 rounded-lg">
+                            <p class="text-orange-800 text-sm text-center">⏰ คูปองนี้หมดอายุแล้ว</p>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function showUserCouponsResult(users) {
+            const container = document.getElementById('coupon-verification-result');
+            container.classList.remove('hidden');
+
+            let html = `
+                <div class="border-2 rounded-lg p-6 bg-blue-50 border-blue-200">
+                    <div class="text-center mb-6">
+                        <div class="text-4xl mb-2">👥</div>
+                        <h3 class="text-xl font-semibold text-blue-800">ผลการค้นหาลูกค้า</h3>
+                    </div>
+            `;
+
+            users.forEach(user => {
+                const userCoupons = user.coupons || [];
+                const activeCoupons = userCoupons.filter(c => !c.used && new Date() <= new Date(c.expiryTimestamp || c.expiryDate));
+                const usedCoupons = userCoupons.filter(c => c.used);
+                const expiredCoupons = userCoupons.filter(c => !c.used && new Date() > new Date(c.expiryTimestamp || c.expiryDate));
+
+                html += `
+                    <div class="mb-6 p-4 bg-white rounded-lg border">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="font-semibold text-lg">${user.name}</h4>
+                                <p class="text-gray-600">${user.email}</p>
+                                <p class="text-sm text-gray-500">ระดับ: ${user.tier} | แต้ม: ${(user.points || 0).toLocaleString()}</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-gray-600">
+                                    <span class="inline-block bg-green-100 text-green-600 px-2 py-1 rounded text-xs mr-1">ใช้ได้ ${activeCoupons.length}</span>
+                                    <span class="inline-block bg-red-100 text-red-600 px-2 py-1 rounded text-xs mr-1">ใช้แล้ว ${usedCoupons.length}</span>
+                                    <span class="inline-block bg-orange-100 text-orange-600 px-2 py-1 rounded text-xs">หมดอายุ ${expiredCoupons.length}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        ${userCoupons.length === 0 ? `
+                            <p class="text-gray-500 text-center py-4">ไม่มีคูปอง</p>
+                        ` : `
+                            <div class="space-y-2">
+                                ${userCoupons.slice(0, 3).map(coupon => {
+                                    const isExpired = new Date() > new Date(coupon.expiryTimestamp || coupon.expiryDate);
+                                    const status = coupon.used ? 'ใช้แล้ว' : isExpired ? 'หมดอายุ' : 'ใช้ได้';
+                                    const statusColor = coupon.used ? 'text-red-600' : isExpired ? 'text-orange-600' : 'text-green-600';
+                                    
+                                    return `
+                                        <div class="flex justify-between items-center p-2 bg-gray-50 rounded text-sm">
+                                            <span>${coupon.code} - ${coupon.name}</span>
+                                            <span class="${statusColor}">${status}</span>
+                                        </div>
+                                    `;
+                                }).join('')}
+                                ${userCoupons.length > 3 ? `<p class="text-gray-500 text-sm text-center">และอีก ${userCoupons.length - 3} คูปอง...</p>` : ''}
+                            </div>
+                        `}
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // Use Coupon Function
+        window.useCoupon = async function(couponCode, userId) {
+            if (!confirm(`ยืนยันการใช้คูปอง ${couponCode}?\n\nการดำเนินการนี้ไม่สามารถยกเลิกได้`)) {
+                return;
+            }
+
+            try {
+                // Get user data
+                const userRef = doc(db, 'users', userId);
+                const userSnap = await getDoc(userRef);
+                
+                if (!userSnap.exists()) {
+                    alert('ไม่พบข้อมูลผู้ใช้');
+                    return;
+                }
+
+                const userData = userSnap.data();
+                const userCoupons = userData.coupons || [];
+                
+                // Find and update the coupon
+                const couponIndex = userCoupons.findIndex(c => c.code === couponCode);
+                if (couponIndex === -1) {
+                    alert('ไม่พบคูปองในระบบ');
+                    return;
+                }
+
+                if (userCoupons[couponIndex].used) {
+                    alert('คูปองนี้ถูกใช้ไปแล้ว');
+                    return;
+                }
+
+                // Mark coupon as used
+                userCoupons[couponIndex].used = true;
+                userCoupons[couponIndex].usedDate = new Date().toLocaleDateString('th-TH');
+                userCoupons[couponIndex].usedTimestamp = new Date().toISOString();
+                userCoupons[couponIndex].usedByAdmin = window.currentUser.name;
+
+                // Update in Firestore
+                await updateDoc(userRef, {
+                    coupons: userCoupons
+                });
+
+                // Log usage history
+                await logCouponUsage(userCoupons[couponIndex], userData);
+
+                alert('✅ ยืนยันการใช้คูปองสำเร็จ!\n\nคูปองได้ถูกทำเครื่องหมายว่าใช้แล้ว');
+                
+                // Refresh verification result
+                showVerificationResult({
+                    status: 'used',
+                    coupon: userCoupons[couponIndex],
+                    owner: userData
+                });
+
+                // Refresh usage history
+                loadUsageHistory();
+
+            } catch (error) {
+                console.error('Use coupon error:', error);
+                alert('เกิดข้อผิดพลาดในการใช้คูปอง');
+            }
+        };
+
+        // Usage History Functions
+        async function logCouponUsage(coupon, user) {
+            try {
+                const usageLog = {
+                    id: Date.now().toString(),
+                    couponCode: coupon.code,
+                    couponName: coupon.name,
+                    couponValue: coupon.value,
+                    couponType: coupon.type,
+                    userId: user.uid,
+                    userName: user.name,
+                    userEmail: user.email,
+                    usedDate: coupon.usedDate,
+                    usedTimestamp: coupon.usedTimestamp,
+                    adminName: window.currentUser.name,
+                    adminId: window.currentUser.uid
+                };
+
+                // Store in Firestore (you might want a separate collection for this)
+                const logRef = doc(db, 'usage_logs', usageLog.id);
+                await setDoc(logRef, usageLog);
+
+            } catch (error) {
+                console.error('Log usage error:', error);
+                // Don't show error to user as this is just logging
+            }
+        }
+
+        async function loadUsageHistory() {
+            try {
+                // Get all users and their used coupons
+                const usersCollection = collection(db, 'users');
+                const usersSnapshot = await getDocs(usersCollection);
+                
+                let usageHistory = [];
+
+                usersSnapshot.forEach((doc) => {
+                    const userData = doc.data();
+                    const userCoupons = userData.coupons || [];
+                    
+                    userCoupons.forEach(coupon => {
+                        if (coupon.used) {
+                            usageHistory.push({
+                                ...coupon,
+                                userName: userData.name,
+                                userEmail: userData.email,
+                                userTier: userData.tier
+                            });
+                        }
+                    });
+                });
+
+                // Sort by used date (newest first)
+                usageHistory.sort((a, b) => new Date(b.usedTimestamp || b.usedDate) - new Date(a.usedTimestamp || a.usedDate));
+
+                displayUsageHistory(usageHistory);
+
+            } catch (error) {
+                console.error('Load usage history error:', error);
+                document.getElementById('usage-history-list').innerHTML = `
+                    <div class="text-center py-8 text-red-500">
+                        <p>เกิดข้อผิดพลาดในการโหลดประวัติ</p>
+                    </div>
+                `;
+            }
+        }
+
+        function displayUsageHistory(history) {
+            const container = document.getElementById('usage-history-list');
+            
+            if (history.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <div class="text-6xl mb-4">📊</div>
+                        <p class="text-gray-500 text-lg">ยังไม่มีประวัติการใช้คูปอง</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<div class="space-y-4">';
+            
+            history.forEach((item, index) => {
+                const usedDate = item.usedDate || 'ไม่ระบุ';
+                const adminName = item.usedByAdmin || 'ระบบ';
+                
+                html += `
+                    <div class="border rounded-lg p-4 bg-white hover:shadow-md transition-shadow">
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="font-semibold text-lg">${item.code}</span>
+                                    <span class="px-2 py-1 bg-red-100 text-red-600 rounded-full text-xs font-semibold">ใช้แล้ว</span>
+                                </div>
+                                <p class="text-gray-700">${item.name}</p>
+                                <p class="text-sm text-gray-500">มูลค่า: ${item.type === 'coupon' ? `฿${item.value}` : `${item.value}%`}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold">${item.userName}</p>
+                                <p class="text-sm text-gray-500">${item.userEmail}</p>
+                                <span class="inline-block px-2 py-1 rounded-full text-xs font-semibold ${
+                                    item.userTier === 'Platinum' ? 'bg-purple-100 text-purple-600' :
+                                    item.userTier === 'Gold' ? 'bg-yellow-100 text-yellow-600' :
+                                    item.userTier === 'Silver' ? 'bg-gray-100 text-gray-600' :
+                                    'bg-orange-100 text-orange-600'
+                                }">${item.userTier}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="border-t pt-3 text-sm text-gray-600">
+                            <div class="flex justify-between">
+                                <span>📅 ใช้เมื่อ: ${usedDate}</span>
+                                <span>👤 อนุมัติโดย: ${adminName}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        window.filterUsageHistory = function() {
+            // This would implement filtering logic
+            // For now, just reload all data
+            loadUsageHistory();
+        };
+
+        // Error handling functions.value}` : `${coupon<!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
@@ -86,6 +381,10 @@
                         <button onclick="showPage('admin')" class="font-medium transition-colors text-gray-700 hover:opacity-75 flex items-center gap-2 whitespace-nowrap hidden font-onest" style="line-height: 32px; font-family: 'Onest', sans-serif !important; letter-spacing: 7.5px;" id="nav-admin">
                             <span>⚙️</span>
                             <span>Admin Panel</span>
+                        </button>
+                        <button onclick="showPage('scanner')" class="font-medium transition-colors text-gray-700 hover:opacity-75 flex items-center gap-2 whitespace-nowrap hidden font-onest" style="line-height: 32px; font-family: 'Onest', sans-serif !important; letter-spacing: 7.5px;" id="nav-scanner">
+                            <span>📱</span>
+                            <span>Coupon Scanner</span>
                         </button>
                     </nav>
                 </div>
@@ -599,6 +898,150 @@
             </div>
         </div>
 
+        <!-- Coupon Scanner Page -->
+        <div id="page-scanner" class="hidden min-h-screen py-8 px-4 secondary-bg">
+            <div class="container mx-auto max-w-4xl">
+                <div class="bg-white rounded-lg shadow-lg p-6 md:p-8 border mb-8 brand-border">
+                    <div class="flex justify-between items-center mb-6">
+                        <h1 class="text-2xl md:text-3xl font-bold tracking-wide brand-color">
+                            📱 Coupon Scanner
+                        </h1>
+                        <div class="text-sm text-gray-500">
+                            แอดมิน: <span class="font-semibold" id="scanner-admin-name"></span>
+                        </div>
+                    </div>
+
+                    <!-- Scanner Tabs -->
+                    <div class="flex flex-col sm:flex-row border-b mb-8 overflow-x-auto">
+                        <button onclick="showScannerTab('qr-scan')" class="scanner-tab flex-1 flex items-center justify-center gap-2 py-4 px-6 font-semibold transition-colors whitespace-nowrap border-b-2 brand-color" style="border-color: #B19D87">
+                            <span>📷</span>
+                            สแกน QR Code
+                        </button>
+                        <button onclick="showScannerTab('manual-check')" class="scanner-tab flex-1 flex items-center justify-center gap-2 py-4 px-6 font-semibold transition-colors whitespace-nowrap hover:bg-gray-50" style="color: #6B7280; border-color: transparent">
+                            <span>🔍</span>
+                            ตรวจสอบรหัส
+                        </button>
+                        <button onclick="showScannerTab('usage-history')" class="scanner-tab flex-1 flex items-center justify-center gap-2 py-4 px-6 font-semibold transition-colors whitespace-nowrap hover:bg-gray-50" style="color: #6B7280; border-color: transparent">
+                            <span>📊</span>
+                            ประวัติการใช้
+                        </button>
+                    </div>
+
+                    <!-- QR Scanner Tab -->
+                    <div id="scanner-qr-scan" class="scanner-content">
+                        <div class="text-center mb-8">
+                            <div class="text-6xl mb-4">📱</div>
+                            <h3 class="text-xl font-semibold mb-4 brand-color">สแกน QR Code คูปอง</h3>
+                            <p class="text-gray-600 mb-6">ให้ลูกค้าแสดง QR Code แล้วกดสแกน</p>
+                        </div>
+
+                        <!-- QR Scanner Area -->
+                        <div class="max-w-md mx-auto mb-8">
+                            <div id="qr-scanner-area" class="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                                <div class="text-4xl mb-4">📷</div>
+                                <p class="text-gray-600 mb-4">คลิกเพื่อเปิดกล้องสแกน QR Code</p>
+                                <button onclick="startQRScanner()" class="brand-bg text-white px-6 py-2 rounded-lg hover:opacity-90" id="start-scanner-btn">
+                                    เริ่มสแกน
+                                </button>
+                                <div id="qr-scanner-video" class="hidden mt-4">
+                                    <video id="scanner-video" class="w-full rounded-lg"></video>
+                                    <button onclick="stopQRScanner()" class="mt-2 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
+                                        หยุดสแกน
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Manual Input Fallback -->
+                        <div class="max-w-md mx-auto">
+                            <h4 class="font-semibold mb-4 brand-color">หรือใส่ข้อมูล QR Code ด้วยตนเอง</h4>
+                            <div class="space-y-4">
+                                <textarea id="qr-data-input" rows="4" class="w-full p-3 border rounded-lg secondary-border" placeholder='วาง JSON ข้อมูล QR Code ที่นี่...&#10;&#10;ตัวอย่าง:&#10;{"type":"LEISMO_COUPON","code":"LEISMO123456",...}'></textarea>
+                                <button onclick="processQRData()" class="w-full brand-bg text-white py-3 rounded-lg hover:opacity-90">
+                                    ตรวจสอบข้อมูล
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Manual Check Tab -->
+                    <div id="scanner-manual-check" class="scanner-content hidden">
+                        <div class="text-center mb-8">
+                            <div class="text-6xl mb-4">🔍</div>
+                            <h3 class="text-xl font-semibold mb-4 brand-color">ตรวจสอบรหัสคูปอง</h3>
+                            <p class="text-gray-600 mb-6">ใส่รหัสคูปองเพื่อตรวจสอบรายละเอียด</p>
+                        </div>
+
+                        <div class="max-w-md mx-auto">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2 brand-color">รหัสคูปอง</label>
+                                    <input type="text" id="coupon-code-input" class="w-full p-3 border rounded-lg secondary-border" placeholder="LEISMO123456" style="text-transform: uppercase;">
+                                </div>
+                                <button onclick="checkCouponCode()" class="w-full brand-bg text-white py-3 rounded-lg hover:opacity-90">
+                                    ตรวจสอบคูปอง
+                                </button>
+                            </div>
+
+                            <!-- Quick Search -->
+                            <div class="mt-8 p-4 bg-blue-50 rounded-lg">
+                                <h4 class="font-semibold text-blue-800 mb-2">🔎 ค้นหาด่วน</h4>
+                                <div class="space-y-2">
+                                    <input type="text" id="user-search-input" class="w-full p-2 border rounded secondary-border" placeholder="ค้นหาจากชื่อลูกค้า...">
+                                    <button onclick="searchUserCoupons()" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">
+                                        ค้นหาคูปองของลูกค้า
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Usage History Tab -->
+                    <div id="scanner-usage-history" class="scanner-content hidden">
+                        <div class="text-center mb-8">
+                            <div class="text-6xl mb-4">📊</div>
+                            <h3 class="text-xl font-semibold mb-4 brand-color">ประวัติการใช้คูปอง</h3>
+                            <p class="text-gray-600 mb-6">รายการคูปองที่ได้รับการตรวจสอบและใช้งาน</p>
+                        </div>
+
+                        <!-- Filter Controls -->
+                        <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">สถานะ</label>
+                                    <select id="status-filter" class="w-full p-2 border rounded secondary-border">
+                                        <option value="all">ทั้งหมด</option>
+                                        <option value="verified">ตรวจสอบแล้ว</option>
+                                        <option value="used">ใช้แล้ว</option>
+                                        <option value="expired">หมดอายุ</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">วันที่</label>
+                                    <input type="date" id="date-filter" class="w-full p-2 border rounded secondary-border">
+                                </div>
+                                <div class="flex items-end">
+                                    <button onclick="filterUsageHistory()" class="w-full brand-bg text-white py-2 rounded hover:opacity-90">
+                                        กรองข้อมูล
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Usage History List -->
+                        <div id="usage-history-list">
+                            <!-- History items will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Coupon Verification Result -->
+                    <div id="coupon-verification-result" class="hidden mt-8">
+                        <!-- Verification results will be shown here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Loading Screen -->
         <div id="loading-screen" class="min-h-screen flex items-center justify-center secondary-bg">
             <div class="text-center">
@@ -1106,7 +1549,7 @@
 
         // Page Navigation Functions
         window.showPage = function(pageName) {
-            const pages = ['home', 'login', 'register', 'loyalty', 'admin'];
+            const pages = ['home', 'login', 'register', 'loyalty', 'admin', 'scanner'];
             pages.forEach(page => {
                 document.getElementById(`page-${page}`).classList.add('hidden');
             });
@@ -1127,6 +1570,13 @@
                     return;
                 }
                 loadAdminData();
+            } else if (pageName === 'scanner') {
+                if (!window.isLoggedIn || !window.currentUser?.isAdmin) {
+                    alert('⚠️ ไม่มีสิทธิ์เข้าถึงหน้านี้\nเฉพาะแอดมินเท่านั้น');
+                    showPage('home');
+                    return;
+                }
+                loadScannerPage();
             }
         };
 
@@ -1134,9 +1584,10 @@
             const navHome = document.getElementById('nav-home');
             const navLoyalty = document.getElementById('nav-loyalty');
             const navAdmin = document.getElementById('nav-admin');
+            const navScanner = document.getElementById('nav-scanner');
 
             // Reset all navigation styles
-            [navHome, navLoyalty, navAdmin].forEach(nav => {
+            [navHome, navLoyalty, navAdmin, navScanner].forEach(nav => {
                 if (nav) {
                     nav.style.color = '#6B7280';
                 }
@@ -1165,8 +1616,10 @@
                 // Show Admin Panel only for Admin users
                 if (window.currentUser.isAdmin) {
                     navAdmin.classList.remove('hidden');
+                    document.getElementById('nav-scanner').classList.remove('hidden');
                 } else {
                     navAdmin.classList.add('hidden');
+                    document.getElementById('nav-scanner').classList.add('hidden');
                 }
                 
                 document.getElementById('user-name').textContent = window.currentUser.name;
@@ -1179,6 +1632,7 @@
                 userInfo.classList.add('hidden');
                 navLoyalty.classList.add('hidden');
                 navAdmin.classList.add('hidden');
+                document.getElementById('nav-scanner').classList.add('hidden');
 
                 homeAuthButtons.classList.remove('hidden');
                 homeLoyaltyButton.classList.add('hidden');
