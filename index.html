@@ -323,15 +323,24 @@
                     </div>
 
                     <div class="mt-8 p-6 bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-lg">
-                        <h3 class="text-xl font-semibold mb-4 brand-color">วิธีใช้ระบบ Loyalty Card</h3>
+                        <h3 class="text-xl font-semibold mb-4 brand-color">💡 วิธีใช้ระบบ Loyalty Card</h3>
                         <ol class="list-decimal list-inside space-y-2 text-gray-700">
                             <li>ซื้อสินค้าจากช่องทาง Line Shopping หรือ Lazada</li>
                             <li>นำรหัสคำสั่งซื้อมากรอกในระบบ</li>
                             <li>รอแอดมินตรวจสอบและอนุมัติ</li>
                             <li>ได้รับแต้มตามยอดซื้อ (1 แต้ม/100 บาท)</li>
                             <li><strong>แลกแต้มเป็นคูปองส่วนลด</strong></li>
-                            <li><strong>นำโค้ดคูปองไปใช้ในช่องทางอื่น</strong></li>
+                            <li><strong>นำคูปองไปใช้ผ่านช่องทางออนไลน์</strong></li>
                         </ol>
+                        
+                        <div class="mt-6 p-4 bg-white rounded-lg border-l-4 border-yellow-400">
+                            <h4 class="font-semibold text-yellow-800 mb-2">🎂 สิทธิพิเศษสมาชิก</h4>
+                            <p class="text-sm text-yellow-700">
+                                • รับคูปองส่วนลดพิเศษในวันเกิดของคุณ<br>
+                                • สะสมแต้มได้จากทุกการซื้อ<br>
+                                • เข้าถึงโปรโมชั่นสมาชิกพิเศษ
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -824,15 +833,27 @@
 
         // Enhanced Coupon Redemption with QR Code
         window.redeemReward = async function(rewardId) {
-            if (!window.currentUser) return;
+            if (!window.currentUser) {
+                alert('กรุณาเข้าสู่ระบบก่อน');
+                return;
+            }
 
             const reward = rewards.find(r => r.id === rewardId);
-            if (!reward) return;
+            if (!reward) {
+                alert('ไม่พบข้อมูลของรางวัล');
+                return;
+            }
 
             if (window.currentUser.points < reward.points) {
                 alert('แต้มไม่พอสำหรับแลกของรางวัลนี้');
                 return;
             }
+
+            // Show loading indicator
+            const redeemButton = event.target;
+            const originalText = redeemButton.textContent;
+            redeemButton.textContent = 'กำลังแลก...';
+            redeemButton.disabled = true;
 
             try {
                 const couponCode = generateCouponCode();
@@ -846,7 +867,7 @@
                     type: reward.type,
                     value: reward.value,
                     maxDiscount: reward.maxDiscount || null,
-                    description: reward.description,
+                    description: reward.description || 'คูปองส่วนลดพิเศษจาก Leismo',
                     used: false,
                     createdDate: formatThaiDate(createdDate),
                     expiryDate: formatThaiDate(expiryDate),
@@ -856,17 +877,20 @@
                     userName: window.currentUser.name
                 };
 
-                // Update user data
-                window.currentUser.points -= reward.points;
-                window.currentUser.coupons = window.currentUser.coupons || [];
-                window.currentUser.coupons.push(newCoupon);
+                // Update user data locally first
+                const updatedPoints = window.currentUser.points - reward.points;
+                const updatedCoupons = [...(window.currentUser.coupons || []), newCoupon];
 
                 // Update in Firestore
                 const userRef = doc(db, 'users', window.currentUser.uid);
                 await updateDoc(userRef, {
-                    points: window.currentUser.points,
-                    coupons: window.currentUser.coupons
+                    points: updatedPoints,
+                    coupons: updatedCoupons
                 });
+
+                // Update local user data after successful Firestore update
+                window.currentUser.points = updatedPoints;
+                window.currentUser.coupons = updatedCoupons;
 
                 // Store current coupon for modal display
                 window.currentCoupon = newCoupon;
@@ -874,78 +898,126 @@
                 // Show coupon modal with QR code
                 showCouponModal(newCoupon);
 
+                // Update UI
                 updateLoyaltyPage();
                 updateAuthUI();
 
+                console.log('Coupon redeemed successfully:', newCoupon);
+
             } catch (error) {
                 console.error('Redeem error:', error);
-                alert('เกิดข้อผิดพลาดในการแลกของรางวัล');
+                alert(`เกิดข้อผิดพลาดในการแลกของรางวัล: ${error.message}`);
+            } finally {
+                // Restore button state
+                if (redeemButton) {
+                    redeemButton.textContent = originalText;
+                    redeemButton.disabled = false;
+                }
             }
         };
 
         // Coupon Modal Functions
         function showCouponModal(coupon) {
-            // Populate coupon information
-            document.getElementById('coupon-display-name').textContent = coupon.name;
-            document.getElementById('coupon-display-code').textContent = coupon.code;
-            document.getElementById('coupon-created-date').textContent = coupon.createdDate;
-            document.getElementById('coupon-expiry-date').textContent = coupon.expiryDate;
-            
-            // Set coupon value display
-            const valueDisplay = document.getElementById('coupon-display-value');
-            if (coupon.type === 'coupon') {
-                valueDisplay.textContent = `฿${coupon.value}`;
-            } else {
-                valueDisplay.textContent = `${coupon.value}%`;
+            try {
+                // Populate coupon information
+                document.getElementById('coupon-display-name').textContent = coupon.name || 'คูปองส่วนลด';
+                document.getElementById('coupon-display-code').textContent = coupon.code || 'LEISMO000000';
+                document.getElementById('coupon-created-date').textContent = coupon.createdDate || 'วันนี้';
+                document.getElementById('coupon-expiry-date').textContent = coupon.expiryDate || '7 วันข้างหน้า';
+                
+                // Set coupon value display
+                const valueDisplay = document.getElementById('coupon-display-value');
+                if (coupon.type === 'coupon') {
+                    valueDisplay.textContent = `฿${coupon.value || 0}`;
+                } else if (coupon.type === 'percent') {
+                    valueDisplay.textContent = `${coupon.value || 0}%`;
+                } else {
+                    valueDisplay.textContent = `฿${coupon.value || 0}`;
+                }
+
+                // Generate QR Code
+                setTimeout(() => {
+                    generateQRCode(coupon);
+                }, 100);
+
+                // Show modal
+                document.getElementById('coupon-modal').classList.remove('hidden');
+                
+                console.log('Coupon modal shown successfully');
+                
+            } catch (error) {
+                console.error('Error showing coupon modal:', error);
+                alert('เกิดข้อผิดพลาดในการแสดงคูปอง');
             }
-
-            // Generate QR Code
-            generateQRCode(coupon);
-
-            // Show modal
-            document.getElementById('coupon-modal').classList.remove('hidden');
         }
 
         function generateQRCode(coupon) {
-            const canvas = document.getElementById('qr-code');
-            
-            // QR Code data with coupon verification info
-            const qrData = {
-                type: 'LEISMO_COUPON',
-                code: coupon.code,
-                id: coupon.id,
-                value: coupon.value,
-                couponType: coupon.type,
-                userId: coupon.userId,
-                userName: coupon.userName,
-                created: coupon.createdTimestamp,
-                expiry: coupon.expiryTimestamp,
-                verification: `leismo-verify-${coupon.code}`
-            };
+            try {
+                const canvas = document.getElementById('qr-code');
+                if (!canvas) {
+                    console.error('QR Code canvas not found');
+                    return;
+                }
+                
+                // QR Code data with coupon verification info
+                const qrData = {
+                    type: 'LEISMO_COUPON',
+                    code: coupon.code || 'UNKNOWN',
+                    id: coupon.id || Date.now().toString(),
+                    value: coupon.value || 0,
+                    couponType: coupon.type || 'coupon',
+                    userId: coupon.userId || window.currentUser?.uid || 'unknown',
+                    userName: coupon.userName || window.currentUser?.name || 'Unknown User',
+                    created: coupon.createdTimestamp || new Date().toISOString(),
+                    expiry: coupon.expiryTimestamp || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+                    verification: `leismo-verify-${coupon.code || 'unknown'}`
+                };
 
-            // Generate QR Code
-            QRCode.toCanvas(canvas, JSON.stringify(qrData), {
-                width: 200,
-                height: 200,
-                color: {
-                    dark: '#B19D87',
-                    light: '#FFFFFF'
-                },
-                errorCorrectionLevel: 'M'
-            }, function(error) {
-                if (error) {
-                    console.error('QR Code generation error:', error);
+                // Generate QR Code with error handling
+                if (typeof QRCode !== 'undefined') {
+                    QRCode.toCanvas(canvas, JSON.stringify(qrData), {
+                        width: 200,
+                        height: 200,
+                        color: {
+                            dark: '#B19D87',
+                            light: '#FFFFFF'
+                        },
+                        errorCorrectionLevel: 'M'
+                    }, function(error) {
+                        if (error) {
+                            console.error('QR Code generation error:', error);
+                            // Fallback: draw error message on canvas
+                            canvas.width = 200;
+                            canvas.height = 200;
+                            const ctx = canvas.getContext('2d');
+                            ctx.fillStyle = '#f0f0f0';
+                            ctx.fillRect(0, 0, 200, 200);
+                            ctx.fillStyle = '#666';
+                            ctx.font = '14px Arial';
+                            ctx.textAlign = 'center';
+                            ctx.fillText('QR Code Error', 100, 90);
+                            ctx.fillText('Please try again', 100, 110);
+                        } else {
+                            console.log('QR Code generated successfully');
+                        }
+                    });
+                } else {
+                    console.error('QRCode library not loaded');
+                    // Fallback for missing library
                     canvas.width = 200;
                     canvas.height = 200;
                     const ctx = canvas.getContext('2d');
-                    ctx.fillStyle = '#f0f0f0';
+                    ctx.fillStyle = '#e0e0e0';
                     ctx.fillRect(0, 0, 200, 200);
                     ctx.fillStyle = '#666';
-                    ctx.font = '14px Arial';
+                    ctx.font = '12px Arial';
                     ctx.textAlign = 'center';
-                    ctx.fillText('QR Code Error', 100, 100);
+                    ctx.fillText('QR Library', 100, 90);
+                    ctx.fillText('Not Available', 100, 110);
                 }
-            });
+            } catch (error) {
+                console.error('Error in generateQRCode:', error);
+            }
         }
 
         window.closeCouponModal = function() {
@@ -954,49 +1026,82 @@
         };
 
         window.downloadCoupon = function() {
-            if (!window.currentCoupon) return;
+            try {
+                if (!window.currentCoupon) {
+                    alert('ไม่พบข้อมูลคูปอง');
+                    return;
+                }
 
-            // Create a temporary canvas for the full coupon image
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = 400;
-            canvas.height = 600;
+                // Create a temporary canvas for the full coupon image
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = 400;
+                canvas.height = 600;
 
-            // Background gradient
-            const gradient = ctx.createLinearGradient(0, 0, 400, 600);
-            gradient.addColorStop(0, '#B19D87');
-            gradient.addColorStop(1, '#DACFBD');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, 400, 600);
+                // Background gradient
+                const gradient = ctx.createLinearGradient(0, 0, 400, 600);
+                gradient.addColorStop(0, '#B19D87');
+                gradient.addColorStop(1, '#DACFBD');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, 400, 600);
 
-            // Add coupon details as text
-            ctx.fillStyle = 'white';
-            ctx.font = 'bold 24px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('LEISMO COUPON', 200, 50);
+                // Add coupon details as text
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 24px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('LEISMO COUPON', 200, 50);
 
-            ctx.font = '18px Arial';
-            ctx.fillText(window.currentCoupon.name, 200, 100);
+                ctx.font = '18px Arial';
+                ctx.fillText(window.currentCoupon.name || 'คูปองส่วนลด', 200, 100);
 
-            ctx.font = 'bold 32px Arial';
-            ctx.fillText(window.currentCoupon.code, 200, 150);
+                ctx.font = 'bold 32px Arial';
+                ctx.fillText(window.currentCoupon.code || 'LEISMO000', 200, 150);
 
-            ctx.font = '16px Arial';
-            ctx.fillText(`ได้รับ: ${window.currentCoupon.createdDate}`, 200, 200);
-            ctx.fillText(`หมดอายุ: ${window.currentCoupon.expiryDate}`, 200, 230);
+                const valueText = window.currentCoupon.type === 'coupon' ? 
+                    `฿${window.currentCoupon.value || 0}` : 
+                    `${window.currentCoupon.value || 0}%`;
+                ctx.font = 'bold 28px Arial';
+                ctx.fillText(valueText, 200, 190);
 
-            // Add QR code to the canvas
-            const qrCanvas = document.getElementById('qr-code');
-            ctx.drawImage(qrCanvas, 100, 280, 200, 200);
+                ctx.font = '16px Arial';
+                ctx.fillText(`ได้รับ: ${window.currentCoupon.createdDate || 'วันนี้'}`, 200, 230);
+                ctx.fillText(`หมดอายุ: ${window.currentCoupon.expiryDate || '7 วันข้างหน้า'}`, 200, 260);
 
-            // Download the image
-            const link = document.createElement('a');
-            link.download = `leismo-coupon-${window.currentCoupon.code}.png`;
-            link.href = canvas.toDataURL();
-            link.click();
+                // Add QR code to the canvas if available
+                const qrCanvas = document.getElementById('qr-code');
+                if (qrCanvas && qrCanvas.width > 0) {
+                    ctx.drawImage(qrCanvas, 100, 300, 200, 200);
+                } else {
+                    // Draw placeholder for QR code
+                    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                    ctx.fillRect(100, 300, 200, 200);
+                    ctx.fillStyle = 'white';
+                    ctx.font = '16px Arial';
+                    ctx.fillText('QR Code', 200, 410);
+                }
 
-            // Show success message
-            alert('✅ บันทึกรูปภาพคูปองสำเร็จ!\nกรุณาส่งรูปนี้ให้แอดมินผ่าน Line');
+                // Add instructions
+                ctx.font = '12px Arial';
+                ctx.fillText('ส่งรูปนี้ให้แอดมินผ่าน Line', 200, 540);
+                ctx.fillText('พร้อมแจ้งสินค้าที่ต้องการซื้อ', 200, 560);
+
+                // Download the image
+                const link = document.createElement('a');
+                link.download = `leismo-coupon-${window.currentCoupon.code || 'unknown'}.png`;
+                link.href = canvas.toDataURL('image/png');
+                
+                // Trigger download
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                // Show success message
+                alert('✅ บันทึกรูปภาพคูปองสำเร็จ!\nกรุณาส่งรูปนี้ให้แอดมินผ่าน Line');
+                
+            } catch (error) {
+                console.error('Download error:', error);
+                alert('เกิดข้อผิดพลาดในการบันทึกรูปภาพ');
+            }
         };
 
         // Page Navigation Functions
