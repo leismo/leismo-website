@@ -351,16 +351,19 @@
                 <div class="bg-orange-50 p-4 rounded-lg mb-6">
                     <h4 class="font-semibold text-orange-800 mb-2">⚠️ หมายเหตุสำคัญ</h4>
                     <ul class="text-sm text-orange-700 space-y-1">
-                        <li>• คูปองมีอายุ 7 วัน หลังจากแลก</li>
-                        <li>• ใช้ได้เฉพาะ 1 ครั้งเท่านั้น</li>
-                        <li>• ต้องติดต่อแอดมินก่อนใช้งาน</li>
+                        <li>• คูปองมีอายุการใช้งาน 7 วัน หลังจากแลก</li>
+                        <li>• คูปองสามารถใช้ได้เพียง 1 ครั้งเท่านั้น และไม่สามารถใช้ร่วมกับสินค้าที่อยู่ในช่วงโปรโมชั่น</li>
+                        <li>• บันทึกรูปภาพคูปองแล้วนำส่งให้กับแอดมินทางช่องทาง Line หรือกดเมนูใช้คูปองด้านล่างเพื่อเชื่อมต่อไปยัง Line พร้อมกับแจ้งสินค้าที่ต้องการใช้คูปอง</li>
                     </ul>
                 </div>
             </div>
 
-            <div class="p-6 border-t bg-gray-50 flex gap-4 sticky bottom-0 rounded-b-2xl">
+            <div class="p-6 border-t bg-gray-50 flex gap-3 sticky bottom-0 rounded-b-2xl">
                 <button onclick="downloadCoupon()" class="flex-1 bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600 transition-colors">
                     💾 บันทึกรูปภาพ
+                </button>
+                <button onclick="openLineChat()" class="flex-1 bg-green-500 text-white py-3 rounded-lg font-semibold hover:bg-green-600 transition-colors">
+                    💬 ใช้คูปอง
                 </button>
                 <button onclick="closeCouponModal()" class="flex-1 bg-gray-500 text-white py-3 rounded-lg font-semibold hover:bg-gray-600 transition-colors">
                     ✕ ปิด
@@ -1102,6 +1105,11 @@
         window.closeCouponModal = function() {
             document.getElementById('coupon-modal').classList.add('hidden');
             window.currentCoupon = null;
+        };
+
+        window.openLineChat = function() {
+            // เปิด Line Chat โดยตรง
+            window.open('https://lin.ee/EVNhIRq', '_blank');
         };
 
         window.downloadCoupon = function() {
