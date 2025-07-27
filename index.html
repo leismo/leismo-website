@@ -302,9 +302,9 @@
     </div>
 
     <!-- Coupon Modal -->
-    <div id="coupon-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl">
-            <div class="p-6 border-b text-center">
+    <div id="coupon-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl my-8 max-h-screen overflow-y-auto">
+            <div class="p-6 border-b text-center sticky top-0 bg-white rounded-t-2xl">
                 <div class="text-4xl mb-2">🎉</div>
                 <h2 class="text-2xl font-bold brand-color">แลกคูปองสำเร็จ!</h2>
                 <p class="text-gray-600 mt-2">กรุณาบันทึกรูปภาพนี้และส่งให้แอดมิน</p>
@@ -338,7 +338,7 @@
                     </div>
                 </div>
 
-                <div class="bg-blue-50 p-4 rounded-lg mb-6">
+                <div class="bg-blue-50 p-4 rounded-lg mb-4">
                     <h4 class="font-semibold text-blue-800 mb-2">📋 วิธีการใช้งาน</h4>
                     <ol class="text-sm text-blue-700 space-y-1">
                         <li>1. บันทึกรูปภาพคูปองนี้</li>
@@ -358,12 +358,12 @@
                 </div>
             </div>
 
-            <div class="p-6 border-t bg-gray-50 flex gap-4">
-                <button onclick="downloadCoupon()" class="flex-1 bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600">
+            <div class="p-6 border-t bg-gray-50 flex gap-4 sticky bottom-0 rounded-b-2xl">
+                <button onclick="downloadCoupon()" class="flex-1 bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600 transition-colors">
                     💾 บันทึกรูปภาพ
                 </button>
-                <button onclick="closeCouponModal()" class="flex-1 bg-gray-500 text-white py-3 rounded-lg font-semibold hover:bg-gray-600">
-                    ปิด
+                <button onclick="closeCouponModal()" class="flex-1 bg-gray-500 text-white py-3 rounded-lg font-semibold hover:bg-gray-600 transition-colors">
+                    ✕ ปิด
                 </button>
             </div>
         </div>
