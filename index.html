@@ -276,21 +276,70 @@
     <div id="page-scanner" class="hidden min-h-screen py-8 px-4 secondary-bg">
         <div class="container mx-auto max-w-4xl">
             <div class="bg-white rounded-lg shadow-lg p-6 md:p-8">
-                <h1 class="text-2xl md:text-3xl font-bold mb-6 brand-color">📱 Coupon Scanner</h1>
+                <h1 class="text-2xl md:text-3xl font-bold mb-6 brand-color">📱 ตรวจสอบคูปอง</h1>
                 
-                <div class="text-center mb-8">
-                    <div class="text-6xl mb-4">📱</div>
-                    <h3 class="text-xl font-semibold mb-4 brand-color">สแกน QR Code คูปอง</h3>
-                    <p class="text-gray-600 mb-6">ให้ลูกค้าแสดง QR Code แล้วกดสแกน</p>
+                <!-- Tab Navigation -->
+                <div class="flex border-b mb-8">
+                    <button onclick="showScannerTab('qr')" class="scanner-tab flex-1 py-4 px-6 font-semibold transition-colors border-b-2 brand-color" style="border-color: #B19D87; color: #B19D87;" id="tab-qr">
+                        📱 สแกน QR Code
+                    </button>
+                    <button onclick="showScannerTab('code')" class="scanner-tab flex-1 py-4 px-6 font-semibold transition-colors text-gray-600 hover:bg-gray-50" id="tab-code">
+                        🔤 กรอกรหัสคูปอง
+                    </button>
                 </div>
-                
-                <div class="max-w-md mx-auto">
-                    <h4 class="font-semibold mb-4 brand-color">ใส่ข้อมูล QR Code</h4>
-                    <div class="space-y-4">
-                        <textarea id="qr-data-input" rows="4" class="w-full p-3 border rounded-lg" placeholder='วาง JSON ข้อมูล QR Code ที่นี่...'></textarea>
-                        <button onclick="processQRData()" class="w-full brand-bg text-white py-3 rounded-lg hover:opacity-90">
-                            ตรวจสอบข้อมูล
-                        </button>
+
+                <!-- QR Scanner Tab -->
+                <div id="scanner-qr" class="scanner-content">
+                    <div class="text-center mb-8">
+                        <div class="text-6xl mb-4">📱</div>
+                        <h3 class="text-xl font-semibold mb-4 brand-color">สแกน QR Code คูปอง</h3>
+                        <p class="text-gray-600 mb-6">ให้ลูกค้าแสดง QR Code จากหน้าคูปอง แล้วคัดลอกข้อมูลมาวาง</p>
+                    </div>
+                    
+                    <div class="max-w-md mx-auto">
+                        <h4 class="font-semibold mb-4 brand-color">วาง JSON ข้อมูล QR Code</h4>
+                        <div class="space-y-4">
+                            <textarea id="qr-data-input" rows="6" class="w-full p-3 border rounded-lg" placeholder='วาง JSON ข้อมูล QR Code ที่นี่...
+
+ตัวอย่าง:
+{"type":"LEISMO_COUPON","code":"LEISMO123456",...}'></textarea>
+                            <button onclick="processQRData()" class="w-full brand-bg text-white py-3 rounded-lg hover:opacity-90 font-semibold">
+                                🔍 ตรวจสอบ QR Code
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Code Input Tab -->
+                <div id="scanner-code" class="scanner-content hidden">
+                    <div class="text-center mb-8">
+                        <div class="text-6xl mb-4">🔤</div>
+                        <h3 class="text-xl font-semibold mb-4 brand-color">กรอกรหัสคูปอง</h3>
+                        <p class="text-gray-600 mb-6">ให้ลูกค้าบอกรหัสคูปอง แล้วกรอกเพื่อตรวจสอบ</p>
+                    </div>
+                    
+                    <div class="max-w-md mx-auto">
+                        <h4 class="font-semibold mb-4 brand-color">รหัสคูปอง</h4>
+                        <div class="space-y-4">
+                            <div class="relative">
+                                <input type="text" id="coupon-code-input" class="w-full p-4 border rounded-lg text-center font-mono text-lg tracking-wider uppercase" placeholder="LEISMO123456" maxlength="12">
+                                <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                                    🎫
+                                </div>
+                            </div>
+                            <button onclick="processCouponCode()" class="w-full brand-bg text-white py-3 rounded-lg hover:opacity-90 font-semibold">
+                                🔍 ตรวจสอบคูปอง
+                            </button>
+                        </div>
+                        
+                        <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                            <h5 class="font-semibold text-blue-800 mb-2">💡 คำแนะนำ</h5>
+                            <ul class="text-sm text-blue-700 space-y-1">
+                                <li>• รหัสคูปองเริ่มต้นด้วย "LEISMO"</li>
+                                <li>• ตามด้วยตัวอักษรและตัวเลข 6 ตัว</li>
+                                <li>• ตัวอย่าง: LEISMO123ABC</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
                 
@@ -1066,13 +1115,16 @@
                 type: 'LEISMO_COUPON',
                 code: coupon.code,
                 id: coupon.id,
+                name: coupon.name,
                 value: coupon.value,
                 couponType: coupon.type,
                 userId: coupon.userId || window.currentUser?.uid,
                 userName: coupon.userName || window.currentUser?.name,
                 created: coupon.createdTimestamp,
                 expiry: coupon.expiryTimestamp,
-                verification: `leismo-verify-${coupon.code}`
+                used: coupon.used || false,
+                verification: `leismo-verify-${coupon.code}`,
+                timestamp: new Date().toISOString()
             };
 
             if (typeof QRCode !== 'undefined') {
@@ -1099,6 +1151,7 @@
                 ctx.font = '12px Arial';
                 ctx.textAlign = 'center';
                 ctx.fillText('QR Code', 100, 100);
+                ctx.fillText(coupon.code, 100, 120);
             }
         }
 
@@ -1138,6 +1191,136 @@
             link.href = canvas.toDataURL();
             link.click();
         };
+
+        // Scanner Tab Functions
+        window.showScannerTab = function(tabName) {
+            const contents = document.querySelectorAll('.scanner-content');
+            contents.forEach(content => content.classList.add('hidden'));
+
+            document.getElementById(`scanner-${tabName}`).classList.remove('hidden');
+
+            const tabs = document.querySelectorAll('.scanner-tab');
+            tabs.forEach(tab => {
+                tab.style.color = '#6B7280';
+                tab.style.borderColor = 'transparent';
+                tab.classList.remove('border-b-2');
+            });
+
+            const activeTab = document.getElementById(`tab-${tabName}`);
+            activeTab.style.color = '#B19D87';
+            activeTab.style.borderColor = '#B19D87';
+            activeTab.classList.add('border-b-2');
+        };
+
+        // Process Coupon Code (ฟังก์ชันใหม่)
+        window.processCouponCode = async function() {
+            const codeInput = document.getElementById('coupon-code-input').value.trim().toUpperCase();
+            
+            if (!codeInput) {
+                alert('กรุณากรอกรหัสคูปอง');
+                return;
+            }
+
+            if (!codeInput.startsWith('LEISMO') || codeInput.length !== 12) {
+                alert('รูปแบบรหัสคูปองไม่ถูกต้อง\nต้องเริ่มต้นด้วย LEISMO และมี 12 ตัวอักษร');
+                return;
+            }
+
+            try {
+                const { collection, getDocs } = window.firebaseLibs;
+                const usersRef = collection(window.db, 'users');
+                const querySnapshot = await getDocs(usersRef);
+                
+                let couponFound = null;
+                let ownerData = null;
+
+                querySnapshot.forEach((doc) => {
+                    const userData = doc.data();
+                    const userCoupons = userData.coupons || [];
+                    const foundCoupon = userCoupons.find(c => c.code === codeInput);
+                    
+                    if (foundCoupon) {
+                        couponFound = foundCoupon;
+                        ownerData = userData;
+                    }
+                });
+
+                if (!couponFound) {
+                    showVerificationResult({
+                        status: 'invalid',
+                        coupon: {
+                            code: codeInput,
+                            name: 'ไม่พบคูปอง',
+                            type: 'unknown',
+                            value: 0,
+                            createdDate: '-',
+                            expiryDate: '-'
+                        },
+                        owner: {
+                            name: 'ไม่พบข้อมูล',
+                            email: '-',
+                            tier: '-',
+                            points: 0
+                        }
+                    });
+                    return;
+                }
+
+                // Check if expired
+                const isExpired = new Date() > new Date(couponFound.expiryTimestamp);
+                
+                // Determine status
+                let status = 'valid';
+                if (couponFound.used) {
+                    status = 'used';
+                } else if (isExpired) {
+                    status = 'expired';
+                }
+
+                showVerificationResult({
+                    status: status,
+                    coupon: {
+                        code: couponFound.code,
+                        name: couponFound.name,
+                        type: couponFound.type,
+                        value: couponFound.value,
+                        createdDate: couponFound.createdDate,
+                        expiryDate: couponFound.expiryDate
+                    },
+                    owner: {
+                        name: ownerData.name,
+                        email: ownerData.email,
+                        tier: ownerData.tier,
+                        points: ownerData.points
+                    }
+                });
+
+            } catch (error) {
+                console.error('Code processing error:', error);
+                alert('เกิดข้อผิดพลาดในการตรวจสอบคูปอง');
+            }
+        };
+
+        // Auto-format coupon code input
+        document.addEventListener('DOMContentLoaded', function() {
+            const codeInput = document.getElementById('coupon-code-input');
+            if (codeInput) {
+                codeInput.addEventListener('input', function(e) {
+                    let value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                    if (value.length > 12) {
+                        value = value.substring(0, 12);
+                    }
+                    e.target.value = value;
+                });
+
+                // Enter key to search
+                codeInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        processCouponCode();
+                    }
+                });
+            }
+        });
 
         // Scanner Functions
         window.processQRData = async function() {
