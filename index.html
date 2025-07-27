@@ -332,21 +332,29 @@
                 <!-- QR Scanner Tab -->
                 <div id="scanner-qr" class="scanner-content">
                     <div class="text-center mb-8">
-                        <div class="text-6xl mb-4">📱</div>
-                        <h3 class="text-xl font-semibold mb-4 brand-color">สแกน QR Code คูปอง</h3>
-                        <p class="text-gray-600 mb-6">ให้ลูกค้าแสดง QR Code จากหน้าคูปอง แล้วคัดลอกข้อมูลมาวาง</p>
+                        <div class="text-6xl mb-4">📝</div>
+                        <h3 class="text-xl font-semibold mb-4 brand-color">ใส่รหัสคูปองหรือ QR Code</h3>
+                        <p class="text-gray-600 mb-6">ใส่รหัสคูปองโดยตรง หรือวาง JSON ข้อมูล QR Code</p>
                     </div>
                     
                     <div class="max-w-md mx-auto">
-                        <h4 class="font-semibold mb-4 brand-color">วาง JSON ข้อมูล QR Code</h4>
+                        <h4 class="font-semibold mb-4 brand-color">รหัสคูปอง หรือ JSON ข้อมูล QR Code</h4>
                         <div class="space-y-4">
-                            <textarea id="qr-data-input" rows="6" class="w-full p-3 border rounded-lg" placeholder='วาง JSON ข้อมูล QR Code ที่นี่...
+                            <textarea id="qr-data-input" rows="4" class="w-full p-3 border rounded-lg" placeholder='ใส่รหัสคูปอง: LEISMO123456
 
-ตัวอย่าง:
+หรือ JSON ข้อมูล QR Code:
 {"type":"LEISMO_COUPON","code":"LEISMO123456",...}'></textarea>
                             <button onclick="processQRData()" class="w-full brand-bg text-white py-3 rounded-lg hover:opacity-90 font-semibold">
-                                🔍 ตรวจสอบ QR Code
+                                🔍 ตรวจสอบ
                             </button>
+                        </div>
+                        
+                        <div class="mt-6 p-4 bg-green-50 rounded-lg">
+                            <h5 class="font-semibold text-green-800 mb-2">💡 รองรับ 2 รูปแบบ</h5>
+                            <ul class="text-sm text-green-700 space-y-1">
+                                <li>• <strong>รหัสคูปอง:</strong> LEISMO123456</li>
+                                <li>• <strong>JSON QR Code:</strong> {"type":"LEISMO_COUPON",...}</li>
+                            </ul>
                         </div>
                     </div>
                 </div>
