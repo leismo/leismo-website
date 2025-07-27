@@ -412,7 +412,8 @@
                     
                     <div class="border-2 border-white border-dashed rounded-lg p-4 mb-4">
                         <div class="text-lg font-semibold mb-2" id="coupon-display-name">คูปองส่วนลด 100฿</div>
-                        <div class="text-xl font-mono tracking-wider font-bold" id="coupon-display-code">LEISMO123456</div>
+                        <div class="text-xl font-mono tracking-wider font-bold select-all cursor-pointer" id="coupon-display-code" onclick="copyCouponCode()">LEISMO123456</div>
+                        <div class="text-xs opacity-75 mt-1">คลิกเพื่อคัดลอกรหัส</div>
                     </div>
                     
                     <div class="flex justify-between text-sm opacity-90">
@@ -421,23 +422,13 @@
                     </div>
                 </div>
 
-                <div class="text-center mb-6">
-                    <h3 class="text-lg font-semibold mb-4 brand-color">รหัสคูปองสำหรับแอดมิน</h3>
-                    <div class="bg-white p-6 rounded-lg border-2 inline-block" style="border-color: #B19D87;">
-                        <div class="text-4xl mb-3 brand-color">🎫</div>
-                        <div class="font-mono text-2xl font-bold tracking-wider mb-2 select-all cursor-pointer" style="color: #B19D87;" id="coupon-display-code-large" onclick="copyCouponCode()">LEISMO123456</div>
-                        <div class="text-sm text-gray-600">รหัสคูปอง (คลิกเพื่อคัดลอก)</div>
-                    </div>
-                    <p class="text-sm text-gray-600 mt-3">📝 แอดมินกรอกรหัสนี้ในระบบตรวจสอบ</p>
-                </div>
-
                 <div class="bg-blue-50 p-4 rounded-lg mb-4">
                     <h4 class="font-semibold text-blue-800 mb-2">📋 วิธีการใช้งาน</h4>
                     <ol class="text-sm text-blue-700 space-y-1">
                         <li>1. แสดงรหัสคูปองนี้ให้แอดมิน</li>
                         <li>2. แอดมินกรอกรหัสในระบบตรวจสอบ</li>
                         <li>3. ระบบจะตรวจสอบสถานะอัตโนมัติ</li>
-                        <li>4. หรือส่งรูปภาพให้แอดมินผ่าน Line</li>
+                        <li>4. หรือคลิกปุ่ม "ใช้คูปอง" เพื่อส่งให้แอดมินทาง Line</li>
                     </ol>
                 </div>
 
