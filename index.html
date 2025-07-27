@@ -385,15 +385,16 @@
                     <div class="bg-white p-4 rounded-lg border-2 inline-block" style="border-color: #B19D87;">
                         <canvas id="qr-code" class="mx-auto"></canvas>
                     </div>
+                    <p class="text-sm text-gray-600 mt-2">📱 แอดมินสแกน QR Code นี้เพื่อตรวจสอบคูปองโดยตรง</p>
                 </div>
 
                 <div class="bg-blue-50 p-4 rounded-lg mb-4">
                     <h4 class="font-semibold text-blue-800 mb-2">📋 วิธีการใช้งาน</h4>
                     <ol class="text-sm text-blue-700 space-y-1">
-                        <li>1. บันทึกรูปภาพคูปองนี้</li>
-                        <li>2. ส่งรูปภาพให้แอดมินผ่านทาง Line</li>
-                        <li>3. แจ้งสินค้าที่ต้องการใช้ส่วนลด</li>
-                        <li>4. รอแอดมินตรวจสอบและยืนยัน</li>
+                        <li>1. แสดง QR Code นี้ให้แอดมิน</li>
+                        <li>2. แอดมินสแกนด้วยกล้องมือถือ</li>
+                        <li>3. ระบบจะตรวจสอบคูปองอัตโนมัติ</li>
+                        <li>4. หรือส่งรูปภาพให้แอดมินผ่าน Line</li>
                     </ol>
                 </div>
 
@@ -1111,24 +1112,11 @@
             const canvas = document.getElementById('qr-code');
             if (!canvas) return;
             
-            const qrData = {
-                type: 'LEISMO_COUPON',
-                code: coupon.code,
-                id: coupon.id,
-                name: coupon.name,
-                value: coupon.value,
-                couponType: coupon.type,
-                userId: coupon.userId || window.currentUser?.uid,
-                userName: coupon.userName || window.currentUser?.name,
-                created: coupon.createdTimestamp,
-                expiry: coupon.expiryTimestamp,
-                used: coupon.used || false,
-                verification: `leismo-verify-${coupon.code}`,
-                timestamp: new Date().toISOString()
-            };
-
+            // สร้าง URL ที่ลิงค์ไปหน้าตรวจสอบคูปองโดยตรง
+            const verificationUrl = `${window.location.origin}${window.location.pathname}#verify-${coupon.code}`;
+            
             if (typeof QRCode !== 'undefined') {
-                QRCode.toCanvas(canvas, JSON.stringify(qrData), {
+                QRCode.toCanvas(canvas, verificationUrl, {
                     width: 200,
                     height: 200,
                     color: {
@@ -1555,10 +1543,45 @@
             }
         }
 
-        // Initialize
+        // Handle QR Code verification URL
+        function handleVerificationUrl() {
+            const hash = window.location.hash;
+            if (hash.startsWith('#verify-')) {
+                const couponCode = hash.replace('#verify-', '');
+                
+                // Check if user is admin
+                if (!window.isLoggedIn || !window.currentUser?.isAdmin) {
+                    alert('🚫 กรุณาเข้าสู่ระบบแอดมินเพื่อตรวจสอบคูปอง');
+                    showPage('login');
+                    return;
+                }
+                
+                // Go to scanner page and auto-fill the coupon code
+                showPage('scanner');
+                showScannerTab('code');
+                
+                // Auto-fill and process the coupon code
+                setTimeout(() => {
+                    const codeInput = document.getElementById('coupon-code-input');
+                    if (codeInput) {
+                        codeInput.value = couponCode;
+                        processCouponCode();
+                    }
+                }, 500);
+                
+                // Clear the hash
+                history.replaceState(null, null, window.location.pathname);
+            }
+        }
+
+        // Listen for hash changes (when QR code is scanned)
+        window.addEventListener('hashchange', handleVerificationUrl);
+        
+        // Check URL on page load
         document.addEventListener('DOMContentLoaded', async function() {
             showPage('home');
             await initializeAdminUser();
+            handleVerificationUrl();
         });
 
     </script>
