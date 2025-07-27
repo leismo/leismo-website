@@ -108,13 +108,13 @@
             <form onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium mb-2 brand-color">อีเมล</label>
-                    <input type="email" id="login-email" required class="w-full p-3 border rounded-lg" placeholder="admin@leismo.com">
+                    <input type="email" id="login-email" required class="w-full p-3 border rounded-lg" placeholder="example@email.com">
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-2 brand-color">รหัสผ่าน</label>
-                    <input type="password" id="login-password" required class="w-full p-3 border rounded-lg" placeholder="admin123">
+                    <input type="password" id="login-password" required class="w-full p-3 border rounded-lg" placeholder="รหัสผ่าน">
                 </div>
-                <button type="submit" class="w-full text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-colors shadow-lg brand-bg">
+                <button type="submit" class="w-full text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-colors shadow-lg brand-bg" id="login-submit">
                     เข้าสู่ระบบ
                 </button>
             </form>
@@ -158,7 +158,7 @@
                     <input type="date" id="register-birthdate" required class="w-full p-3 border rounded-lg">
                     <p class="text-xs text-gray-500 mt-1">🎉 รับส่วนลดพิเศษในวันเกิดของคุณ!</p>
                 </div>
-                <button type="submit" class="w-full text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-colors shadow-lg brand-bg">
+                <button type="submit" class="w-full text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-colors shadow-lg brand-bg" id="register-submit">
                     สมัครสมาชิก
                 </button>
             </form>
@@ -243,27 +243,30 @@
                     <div class="text-center p-6 rounded-lg secondary-bg">
                         <div class="text-4xl mb-2">👥</div>
                         <h3 class="text-lg font-semibold mb-2 brand-color">ผู้ใช้ทั้งหมด</h3>
-                        <p class="text-2xl font-bold brand-color">5</p>
+                        <p class="text-2xl font-bold brand-color" id="admin-total-users">-</p>
                     </div>
                     <div class="text-center p-6 rounded-lg secondary-bg">
                         <div class="text-4xl mb-2">⭐</div>
                         <h3 class="text-lg font-semibold mb-2 brand-color">แต้มรวม</h3>
-                        <p class="text-2xl font-bold brand-color">12,500</p>
+                        <p class="text-2xl font-bold brand-color" id="admin-total-points">-</p>
                     </div>
                     <div class="text-center p-6 rounded-lg secondary-bg">
                         <div class="text-4xl mb-2">🎫</div>
                         <h3 class="text-lg font-semibold mb-2 brand-color">คูปองแลกแล้ว</h3>
-                        <p class="text-2xl font-bold brand-color">25</p>
+                        <p class="text-2xl font-bold brand-color" id="admin-total-coupons">-</p>
                     </div>
                     <div class="text-center p-6 rounded-lg secondary-bg">
                         <div class="text-4xl mb-2">💰</div>
                         <h3 class="text-lg font-semibold mb-2 brand-color">มูลค่าส่วนลด</h3>
-                        <p class="text-2xl font-bold brand-color">5,000฿</p>
+                        <p class="text-2xl font-bold brand-color" id="admin-total-value">-</p>
                     </div>
                 </div>
                 
-                <div class="text-center py-12">
-                    <p class="text-gray-500">ระบบ Admin Panel จะเพิ่มเติมในเร็วๆ นี้</p>
+                <div class="bg-white border rounded-lg p-6">
+                    <h3 class="text-lg font-semibold mb-4 brand-color">รายชื่อสมาชิก</h3>
+                    <div id="admin-users-list" class="space-y-4">
+                        <!-- Users will be loaded here -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -366,7 +369,36 @@
         </div>
     </div>
 
-    <script>
+    <!-- Firebase Scripts -->
+    <script type="module">
+        // Firebase Configuration
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, query, where } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBXGkArdsTGXW58iqIas3c9dodTWv0hVuE",
+            authDomain: "leismo-website-8f6b0.firebaseapp.com",
+            projectId: "leismo-website-8f6b0",
+            storageBucket: "leismo-website-8f6b0.firebasestorage.app",
+            messagingSenderId: "1085891529571",
+            appId: "1:1085891529571:web:9125f49c54ea1de9b96156",
+            measurementId: "G-FZQ92YJ9ZN"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Make Firebase available globally
+        window.db = db;
+        window.auth = auth;
+        window.firebaseLibs = {
+            collection, doc, setDoc, getDoc, getDocs, updateDoc, query, where,
+            createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged
+        };
+
         // Global Variables
         window.currentUser = null;
         window.isLoggedIn = false;
@@ -380,6 +412,33 @@
             { id: 4, name: 'ฟรีส่ง (มูลค่า 50฿)', points: 300, type: 'coupon', value: 50, description: 'ฟรีค่าจัดส่งทุกพื้นที่ในประเทศ' },
             { id: 5, name: 'ส่วนลด 15%', points: 1500, type: 'percent', value: 15, maxDiscount: 300, description: 'ส่วนลด 15% สูงสุด 300 บาท' }
         ];
+
+        // Initialize Admin User
+        async function initializeAdminUser() {
+            try {
+                const { doc, getDoc, setDoc } = window.firebaseLibs;
+                const adminRef = doc(window.db, 'users', 'admin_001');
+                const adminSnap = await getDoc(adminRef);
+                
+                if (!adminSnap.exists()) {
+                    const adminUser = {
+                        uid: 'admin_001',
+                        name: 'Admin Leismo',
+                        email: 'admin@leismo.com',
+                        points: 99999,
+                        tier: 'Platinum',
+                        isAdmin: true,
+                        coupons: [],
+                        createdAt: new Date().toISOString()
+                    };
+                    
+                    await setDoc(adminRef, adminUser);
+                    console.log('Admin user initialized');
+                }
+            } catch (error) {
+                console.error('Error initializing admin:', error);
+            }
+        }
 
         // Utility Functions
         function generateCouponCode() {
@@ -398,6 +457,199 @@
                 day: 'numeric'
             });
         }
+
+        // Authentication Functions
+        window.handleLogin = async function(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const submitBtn = document.getElementById('login-submit');
+
+            if (!email || !password) {
+                showError('login-error', 'กรุณากรอกอีเมลและรหัสผ่าน');
+                return;
+            }
+
+            submitBtn.textContent = 'กำลังเข้าสู่ระบบ...';
+            submitBtn.disabled = true;
+
+            try {
+                const { signInWithEmailAndPassword, doc, getDoc } = window.firebaseLibs;
+                
+                // Check if admin login
+                if (email === 'admin@leismo.com' && password === 'admin123') {
+                    // Load admin user from Firestore
+                    const adminRef = doc(window.db, 'users', 'admin_001');
+                    const adminSnap = await getDoc(adminRef);
+                    
+                    if (adminSnap.exists()) {
+                        window.currentUser = adminSnap.data();
+                        window.isLoggedIn = true;
+                        updateAuthUI();
+                        hideError('login-error');
+                        alert('เข้าสู่ระบบแอดมินสำเร็จ!');
+                        showPage('home');
+                    } else {
+                        throw new Error('Admin user not found');
+                    }
+                } else {
+                    // Regular user login with Firebase Auth
+                    const userCredential = await signInWithEmailAndPassword(window.auth, email, password);
+                    const user = userCredential.user;
+                    
+                    // Load user data from Firestore
+                    const userRef = doc(window.db, 'users', user.uid);
+                    const userSnap = await getDoc(userRef);
+                    
+                    if (userSnap.exists()) {
+                        window.currentUser = userSnap.data();
+                        window.isLoggedIn = true;
+                        updateAuthUI();
+                        hideError('login-error');
+                        alert('เข้าสู่ระบบสำเร็จ!');
+                        showPage('home');
+                    } else {
+                        throw new Error('User data not found');
+                    }
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                let errorMessage = 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ';
+                
+                if (error.code === 'auth/user-not-found') {
+                    errorMessage = 'ไม่พบบัญชีผู้ใช้นี้ กรุณาสมัครสมาชิกก่อน';
+                } else if (error.code === 'auth/wrong-password') {
+                    errorMessage = 'รหัสผ่านไม่ถูกต้อง';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = 'รูปแบบอีเมลไม่ถูกต้อง';
+                } else if (error.code === 'auth/too-many-requests') {
+                    errorMessage = 'มีการพยายามเข้าสู่ระบบมากเกินไป กรุณาลองใหม่ภายหลัง';
+                }
+                
+                showError('login-error', errorMessage);
+            } finally {
+                submitBtn.textContent = 'เข้าสู่ระบบ';
+                submitBtn.disabled = false;
+            }
+        };
+
+        window.handleRegister = async function(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('register-name').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const birthDate = document.getElementById('register-birthdate').value;
+            const submitBtn = document.getElementById('register-submit');
+
+            if (!name || !email || !password || !birthDate) {
+                showError('register-error', 'กรุณากรอกข้อมูลให้ครบถ้วน');
+                return;
+            }
+
+            if (password.length < 6) {
+                showError('register-error', 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');
+                return;
+            }
+
+            submitBtn.textContent = 'กำลังสมัคร...';
+            submitBtn.disabled = true;
+
+            try {
+                const { createUserWithEmailAndPassword, doc, setDoc } = window.firebaseLibs;
+                
+                // Create user with Firebase Auth
+                const userCredential = await createUserWithEmailAndPassword(window.auth, email, password);
+                const user = userCredential.user;
+
+                // Create user document in Firestore
+                const userData = {
+                    uid: user.uid,
+                    name: name,
+                    email: email,
+                    birthDate: birthDate,
+                    points: 100,
+                    tier: 'Bronze',
+                    coupons: [],
+                    isAdmin: false,
+                    createdAt: new Date().toISOString()
+                };
+
+                await setDoc(doc(window.db, 'users', user.uid), userData);
+
+                window.currentUser = userData;
+                window.isLoggedIn = true;
+                updateAuthUI();
+                hideError('register-error');
+                
+                alert('สมัครสมาชิกสำเร็จ! ยินดีต้อนรับสู่ Leismo\nได้รับแต้มต้อนรับ 100 แต้ม');
+                showPage('home');
+                
+            } catch (error) {
+                console.error('Registration error:', error);
+                let errorMessage = 'เกิดข้อผิดพลาดในการสมัครสมาชิก';
+                
+                if (error.code === 'auth/email-already-in-use') {
+                    errorMessage = 'อีเมลนี้มีผู้ใช้แล้ว กรุณาใช้อีเมลอื่น';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = 'รูปแบบอีเมลไม่ถูกต้อง';
+                } else if (error.code === 'auth/weak-password') {
+                    errorMessage = 'รหัสผ่านอ่อนแอเกินไป กรุณาใช้รหัสผ่านที่แข็งแกร่งกว่านี้';
+                }
+                
+                showError('register-error', errorMessage);
+            } finally {
+                submitBtn.textContent = 'สมัครสมาชิก';
+                submitBtn.disabled = false;
+            }
+        };
+
+        window.logout = async function() {
+            try {
+                const { signOut } = window.firebaseLibs;
+                
+                if (window.currentUser && !window.currentUser.isAdmin) {
+                    await signOut(window.auth);
+                }
+                
+                window.currentUser = null;
+                window.isLoggedIn = false;
+                updateAuthUI();
+                showPage('home');
+                alert('ออกจากระบบสำเร็จ');
+            } catch (error) {
+                console.error('Logout error:', error);
+                alert('เกิดข้อผิดพลาดในการออกจากระบบ');
+            }
+        };
+
+        // Listen for auth state changes
+        window.firebaseLibs.onAuthStateChanged(window.auth, async (user) => {
+            if (user && user.email !== 'admin@leismo.com') {
+                try {
+                    const { doc, getDoc } = window.firebaseLibs;
+                    // Load user data from Firestore
+                    const userRef = doc(window.db, 'users', user.uid);
+                    const userSnap = await getDoc(userRef);
+                    
+                    if (userSnap.exists()) {
+                        window.currentUser = userSnap.data();
+                        window.isLoggedIn = true;
+                        updateAuthUI();
+                        console.log('User auto-logged in:', window.currentUser.name);
+                    }
+                } catch (error) {
+                    console.error('Error loading user data:', error);
+                }
+            } else if (!user) {
+                if (window.currentUser && !window.currentUser.isAdmin) {
+                    window.currentUser = null;
+                    window.isLoggedIn = false;
+                    updateAuthUI();
+                }
+            }
+        });
 
         // Navigation
         window.showPage = function(pageName) {
@@ -422,7 +674,14 @@
                     return;
                 }
                 updateLoyaltyPage();
-            } else if (pageName === 'admin' || pageName === 'scanner') {
+            } else if (pageName === 'admin') {
+                if (!window.isLoggedIn || !window.currentUser?.isAdmin) {
+                    alert('⚠️ ไม่มีสิทธิ์เข้าถึงหน้านี้\nเฉพาะแอดมินเท่านั้น');
+                    showPage('home');
+                    return;
+                }
+                loadAdminData();
+            } else if (pageName === 'scanner') {
                 if (!window.isLoggedIn || !window.currentUser?.isAdmin) {
                     alert('⚠️ ไม่มีสิทธิ์เข้าถึงหน้านี้\nเฉพาะแอดมินเท่านั้น');
                     showPage('home');
@@ -445,88 +704,6 @@
                 currentNav.style.color = '#B19D87';
             }
         }
-
-        // Authentication
-        window.handleLogin = function(event) {
-            event.preventDefault();
-            
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-
-            if (!email || !password) {
-                showError('login-error', 'กรุณากรอกอีเมลและรหัสผ่าน');
-                return;
-            }
-
-            if (email === 'admin@leismo.com' && password === 'admin123') {
-                window.currentUser = {
-                    name: 'Admin Leismo',
-                    email: 'admin@leismo.com',
-                    points: 99999,
-                    tier: 'Platinum',
-                    isAdmin: true,
-                    coupons: []
-                };
-            } else {
-                window.currentUser = {
-                    name: email.split('@')[0],
-                    email: email,
-                    points: 1500,
-                    tier: 'Bronze',
-                    isAdmin: false,
-                    coupons: []
-                };
-            }
-
-            window.isLoggedIn = true;
-            updateAuthUI();
-            hideError('login-error');
-            alert('เข้าสู่ระบบสำเร็จ!');
-            showPage('home');
-        };
-
-        window.handleRegister = function(event) {
-            event.preventDefault();
-            
-            const name = document.getElementById('register-name').value;
-            const email = document.getElementById('register-email').value;
-            const password = document.getElementById('register-password').value;
-            const birthDate = document.getElementById('register-birthdate').value;
-
-            if (!name || !email || !password || !birthDate) {
-                showError('register-error', 'กรุณากรอกข้อมูลให้ครบถ้วน');
-                return;
-            }
-
-            if (password.length < 6) {
-                showError('register-error', 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');
-                return;
-            }
-
-            window.currentUser = {
-                name: name,
-                email: email,
-                birthDate: birthDate,
-                points: 100,
-                tier: 'Bronze',
-                coupons: [],
-                isAdmin: false
-            };
-            
-            window.isLoggedIn = true;
-            updateAuthUI();
-            hideError('register-error');
-            alert('สมัครสมาชิกสำเร็จ! ยินดีต้อนรับสู่ Leismo\nได้รับแต้มต้อนรับ 100 แต้ม');
-            showPage('home');
-        };
-
-        window.logout = function() {
-            window.currentUser = null;
-            window.isLoggedIn = false;
-            updateAuthUI();
-            showPage('home');
-            alert('ออกจากระบบสำเร็จ');
-        };
 
         function updateAuthUI() {
             const authButtons = document.getElementById('auth-buttons');
@@ -717,8 +894,82 @@
             });
         }
 
+        // Admin Functions
+        async function loadAdminData() {
+            if (!window.currentUser?.isAdmin) return;
+
+            try {
+                const { collection, getDocs } = window.firebaseLibs;
+                const usersCollection = collection(window.db, 'users');
+                const querySnapshot = await getDocs(usersCollection);
+                
+                let totalUsers = 0;
+                let totalPoints = 0;
+                let totalCoupons = 0;
+                let totalValue = 0;
+                const usersList = [];
+
+                querySnapshot.forEach((doc) => {
+                    const userData = doc.data();
+                    if (!userData.isAdmin) {
+                        totalUsers++;
+                        totalPoints += userData.points || 0;
+                        
+                        const userCoupons = userData.coupons || [];
+                        totalCoupons += userCoupons.length;
+                        
+                        userCoupons.forEach(coupon => {
+                            if (coupon.type === 'coupon') {
+                                totalValue += coupon.value;
+                            }
+                        });
+                        
+                        usersList.push(userData);
+                    }
+                });
+
+                // Update admin stats
+                document.getElementById('admin-total-users').textContent = totalUsers;
+                document.getElementById('admin-total-points').textContent = totalPoints.toLocaleString();
+                document.getElementById('admin-total-coupons').textContent = totalCoupons;
+                document.getElementById('admin-total-value').textContent = totalValue.toLocaleString() + '฿';
+
+                // Load users list
+                const usersListContainer = document.getElementById('admin-users-list');
+                usersListContainer.innerHTML = '';
+
+                if (usersList.length === 0) {
+                    usersListContainer.innerHTML = '<p class="text-gray-500 text-center">ยังไม่มีสมาชิก</p>';
+                    return;
+                }
+
+                usersList.forEach(user => {
+                    const userDiv = document.createElement('div');
+                    userDiv.className = 'border rounded-lg p-4 hover:bg-gray-50';
+                    userDiv.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h4 class="font-semibold">${user.name}</h4>
+                                <p class="text-sm text-gray-600">${user.email}</p>
+                                <p class="text-xs text-gray-500">สมัครเมื่อ: ${new Date(user.createdAt).toLocaleDateString('th-TH')}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold brand-color">${user.tier}</p>
+                                <p class="text-sm">${(user.points || 0).toLocaleString()} แต้ม</p>
+                                <p class="text-xs text-gray-500">${(user.coupons || []).length} คูปอง</p>
+                            </div>
+                        </div>
+                    `;
+                    usersListContainer.appendChild(userDiv);
+                });
+
+            } catch (error) {
+                console.error('Error loading admin data:', error);
+            }
+        }
+
         // Coupon Functions
-        window.redeemReward = function(rewardId) {
+        window.redeemReward = async function(rewardId) {
             if (!window.currentUser) {
                 alert('กรุณาเข้าสู่ระบบก่อน');
                 return;
@@ -735,33 +986,53 @@
                 return;
             }
 
-            const couponCode = generateCouponCode();
-            const createdDate = new Date();
-            const expiryDate = new Date(createdDate.getTime() + 7 * 24 * 60 * 60 * 1000);
-            
-            const newCoupon = {
-                id: Date.now().toString(),
-                code: couponCode,
-                name: reward.name,
-                type: reward.type,
-                value: reward.value,
-                maxDiscount: reward.maxDiscount || null,
-                description: reward.description,
-                used: false,
-                createdDate: formatThaiDate(createdDate),
-                expiryDate: formatThaiDate(expiryDate),
-                createdTimestamp: createdDate.toISOString(),
-                expiryTimestamp: expiryDate.toISOString()
-            };
+            try {
+                const { doc, updateDoc } = window.firebaseLibs;
+                
+                const couponCode = generateCouponCode();
+                const createdDate = new Date();
+                const expiryDate = new Date(createdDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+                
+                const newCoupon = {
+                    id: Date.now().toString(),
+                    code: couponCode,
+                    name: reward.name,
+                    type: reward.type,
+                    value: reward.value,
+                    maxDiscount: reward.maxDiscount || null,
+                    description: reward.description,
+                    used: false,
+                    createdDate: formatThaiDate(createdDate),
+                    expiryDate: formatThaiDate(expiryDate),
+                    createdTimestamp: createdDate.toISOString(),
+                    expiryTimestamp: expiryDate.toISOString(),
+                    userId: window.currentUser.uid,
+                    userName: window.currentUser.name
+                };
 
-            window.currentUser.points -= reward.points;
-            window.currentUser.coupons = window.currentUser.coupons || [];
-            window.currentUser.coupons.push(newCoupon);
-            window.currentCoupon = newCoupon;
+                // Update user data
+                window.currentUser.points -= reward.points;
+                window.currentUser.coupons = window.currentUser.coupons || [];
+                window.currentUser.coupons.push(newCoupon);
 
-            showCouponModal(newCoupon);
-            updateLoyaltyPage();
-            updateAuthUI();
+                // Update in Firestore
+                const userRef = doc(window.db, 'users', window.currentUser.uid);
+                await updateDoc(userRef, {
+                    points: window.currentUser.points,
+                    coupons: window.currentUser.coupons
+                });
+
+                window.currentCoupon = newCoupon;
+                showCouponModal(newCoupon);
+                updateLoyaltyPage();
+                updateAuthUI();
+
+                console.log('Coupon redeemed successfully:', newCoupon);
+
+            } catch (error) {
+                console.error('Redeem error:', error);
+                alert('เกิดข้อผิดพลาดในการแลกของรางวัล กรุณาลองใหม่');
+            }
         };
 
         function showCouponModal(coupon) {
@@ -794,6 +1065,8 @@
                 id: coupon.id,
                 value: coupon.value,
                 couponType: coupon.type,
+                userId: coupon.userId || window.currentUser?.uid,
+                userName: coupon.userName || window.currentUser?.name,
                 created: coupon.createdTimestamp,
                 expiry: coupon.expiryTimestamp,
                 verification: `leismo-verify-${coupon.code}`
@@ -832,11 +1105,34 @@
         };
 
         window.downloadCoupon = function() {
-            alert('ฟีเจอร์ดาวน์โหลดจะพัฒนาในเร็วๆ นี้');
+            // Create a temporary canvas to capture the coupon
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 400;
+            canvas.height = 600;
+
+            // Draw coupon background
+            const gradient = ctx.createLinearGradient(0, 0, 400, 600);
+            gradient.addColorStop(0, '#B19D87');
+            gradient.addColorStop(1, '#DACFBD');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 400, 600);
+
+            // Add text
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 24px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Leismo Coupon', 200, 50);
+
+            // Create download link
+            const link = document.createElement('a');
+            link.download = `leismo-coupon-${window.currentCoupon?.code || 'download'}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
         };
 
         // Scanner Functions
-        window.processQRData = function() {
+        window.processQRData = async function() {
             const qrInput = document.getElementById('qr-data-input').value.trim();
             
             if (!qrInput) {
@@ -851,26 +1147,79 @@
                     throw new Error('ไม่ใช่ QR Code ของคูปอง Leismo');
                 }
 
+                // Find the coupon in Firebase
+                const { collection, query, where, getDocs } = window.firebaseLibs;
+                const usersRef = collection(window.db, 'users');
+                const q = query(usersRef, where('coupons', 'array-contains-any', [{ code: qrData.code }]));
+                
+                let couponFound = null;
+                let ownerData = null;
+
+                const querySnapshot = await getDocs(usersRef);
+                querySnapshot.forEach((doc) => {
+                    const userData = doc.data();
+                    const userCoupons = userData.coupons || [];
+                    const foundCoupon = userCoupons.find(c => c.code === qrData.code);
+                    
+                    if (foundCoupon) {
+                        couponFound = foundCoupon;
+                        ownerData = userData;
+                    }
+                });
+
+                if (!couponFound) {
+                    showVerificationResult({
+                        status: 'invalid',
+                        coupon: {
+                            code: qrData.code,
+                            name: 'คูปองไม่พบ',
+                            type: 'unknown',
+                            value: 0,
+                            createdDate: '-',
+                            expiryDate: '-'
+                        },
+                        owner: {
+                            name: 'ไม่พบข้อมูล',
+                            email: '-',
+                            tier: '-',
+                            points: 0
+                        }
+                    });
+                    return;
+                }
+
+                // Check if expired
+                const isExpired = new Date() > new Date(couponFound.expiryTimestamp);
+                
+                // Determine status
+                let status = 'valid';
+                if (couponFound.used) {
+                    status = 'used';
+                } else if (isExpired) {
+                    status = 'expired';
+                }
+
                 showVerificationResult({
-                    status: 'valid',
+                    status: status,
                     coupon: {
-                        code: qrData.code,
-                        name: 'คูปองส่วนลด',
-                        type: qrData.couponType,
-                        value: qrData.value,
-                        createdDate: 'วันนี้',
-                        expiryDate: '7 วันข้างหน้า'
+                        code: couponFound.code,
+                        name: couponFound.name,
+                        type: couponFound.type,
+                        value: couponFound.value,
+                        createdDate: couponFound.createdDate,
+                        expiryDate: couponFound.expiryDate
                     },
                     owner: {
-                        name: 'ลูกค้าทดสอบ',
-                        email: 'customer@test.com',
-                        tier: 'Bronze',
-                        points: 1500
+                        name: ownerData.name,
+                        email: ownerData.email,
+                        tier: ownerData.tier,
+                        points: ownerData.points
                     }
                 });
 
             } catch (error) {
-                alert('ข้อมูล QR Code ไม่ถูกต้อง');
+                console.error('QR processing error:', error);
+                alert('ข้อมูล QR Code ไม่ถูกต้อง หรือเกิดข้อผิดพลาดในการตรวจสอบ');
             }
         };
 
@@ -896,6 +1245,11 @@
                     statusIcon = '⏰';
                     statusText = 'คูปองหมดอายุ';
                     break;
+                case 'invalid':
+                    statusColor = 'bg-red-50 border-red-200';
+                    statusIcon = '🚫';
+                    statusText = 'คูปองไม่ถูกต้อง';
+                    break;
             }
 
             const coupon = result.coupon;
@@ -915,7 +1269,7 @@
                             <div class="space-y-2 text-sm">
                                 <p><strong>รหัส:</strong> ${coupon.code}</p>
                                 <p><strong>ชื่อ:</strong> ${coupon.name}</p>
-                                <p><strong>มูลค่า:</strong> ${coupon.type === 'coupon' ? `฿${coupon.value}` : `${coupon.value}%`}</p>
+                                <p><strong>มูลค่า:</strong> ${coupon.type === 'coupon' ? `฿${coupon.value}` : coupon.type === 'percent' ? `${coupon.value}%` : '-'}</p>
                                 <p><strong>ได้รับ:</strong> ${coupon.createdDate}</p>
                                 <p><strong>หมดอายุ:</strong> ${coupon.expiryDate}</p>
                             </div>
@@ -927,7 +1281,7 @@
                                 <p><strong>ชื่อ:</strong> ${owner.name}</p>
                                 <p><strong>อีเมล:</strong> ${owner.email}</p>
                                 <p><strong>ระดับ:</strong> ${owner.tier}</p>
-                                <p><strong>แต้มปัจจุบัน:</strong> ${owner.points.toLocaleString()} แต้ม</p>
+                                <p><strong>แต้มปัจจุบัน:</strong> ${owner.points?.toLocaleString() || '0'} แต้ม</p>
                             </div>
                         </div>
                     </div>
@@ -943,9 +1297,54 @@
             `;
         }
 
-        window.useCoupon = function(couponCode) {
-            if (confirm(`ยืนยันการใช้คูปอง ${couponCode}?`)) {
-                alert('✅ ยืนยันการใช้คูปองสำเร็จ!');
+        window.useCoupon = async function(couponCode) {
+            if (!confirm(`ยืนยันการใช้คูปอง ${couponCode}?`)) {
+                return;
+            }
+
+            try {
+                const { collection, getDocs, doc, updateDoc } = window.firebaseLibs;
+                const usersRef = collection(window.db, 'users');
+                const querySnapshot = await getDocs(usersRef);
+                
+                let foundUser = null;
+                let couponIndex = -1;
+
+                querySnapshot.forEach((docSnapshot) => {
+                    const userData = docSnapshot.data();
+                    const userCoupons = userData.coupons || [];
+                    const index = userCoupons.findIndex(c => c.code === couponCode);
+                    
+                    if (index !== -1) {
+                        foundUser = { id: docSnapshot.id, data: userData };
+                        couponIndex = index;
+                    }
+                });
+
+                if (foundUser && couponIndex !== -1) {
+                    // Mark coupon as used
+                    foundUser.data.coupons[couponIndex].used = true;
+                    foundUser.data.coupons[couponIndex].usedDate = formatThaiDate(new Date());
+                    foundUser.data.coupons[couponIndex].usedTimestamp = new Date().toISOString();
+
+                    // Update in Firestore
+                    const userRef = doc(window.db, 'users', foundUser.id);
+                    await updateDoc(userRef, {
+                        coupons: foundUser.data.coupons
+                    });
+
+                    alert('✅ ยืนยันการใช้คูปองสำเร็จ!');
+                    
+                    // Refresh the verification result
+                    document.getElementById('qr-data-input').value = '';
+                    document.getElementById('coupon-verification-result').classList.add('hidden');
+                } else {
+                    alert('ไม่พบคูปองที่ระบุ');
+                }
+
+            } catch (error) {
+                console.error('Error using coupon:', error);
+                alert('เกิดข้อผิดพลาดในการใช้คูปอง');
             }
         };
 
@@ -966,9 +1365,11 @@
         }
 
         // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             showPage('home');
+            await initializeAdminUser();
         });
+
     </script>
 </body>
 </html>
