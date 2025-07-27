@@ -1197,8 +1197,20 @@
         // User Details Functions
         let currentSelectedUser = null;
 
-        function showUserDetails(user) {
+        window.showUserDetails = function(user) {
+            // รองรับทั้งการส่ง object และ string
+            if (typeof user === 'string') {
+                try {
+                    user = JSON.parse(user);
+                } catch (e) {
+                    console.error('Error parsing user data:', e);
+                    alert('เกิดข้อผิดพลาดในการโหลดข้อมูลผู้ใช้');
+                    return;
+                }
+            }
+            
             currentSelectedUser = user;
+            console.log('Showing user details for:', user.name);
             
             // Fill personal info
             document.getElementById('user-detail-name').textContent = user.name || '-';
@@ -1280,7 +1292,7 @@
             // Show modal
             document.body.style.overflow = 'hidden';
             document.getElementById('user-details-modal').classList.remove('hidden');
-        }
+        };
 
         window.closeUserDetailsModal = function() {
             document.getElementById('user-details-modal').classList.add('hidden');
@@ -1419,7 +1431,14 @@
                 usersList.forEach(user => {
                     const userDiv = document.createElement('div');
                     userDiv.className = 'border rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors';
-                    userDiv.ondblclick = () => showUserDetails(user);
+                    userDiv.style.borderColor = '#DACFBD';
+                    
+                    // เพิ่ม event listener แบบชัดเจน
+                    userDiv.addEventListener('dblclick', function() {
+                        console.log('Double clicked user:', user.name);
+                        showUserDetails(user);
+                    });
+                    
                     userDiv.innerHTML = `
                         <div class="flex justify-between items-center">
                             <div>
@@ -1433,7 +1452,14 @@
                                 <p class="text-xs text-gray-500">${(user.coupons || []).length} คูปอง</p>
                             </div>
                         </div>
-                        <div class="mt-2 text-xs text-blue-600">💡 ดับเบิลคลิกเพื่อดูรายละเอียด</div>
+                        <div class="mt-2 text-xs text-blue-600 font-medium">
+                            💡 ดับเบิลคลิกเพื่อดูรายละเอียด หรือคลิกปุ่มด้านล่าง
+                        </div>
+                        <div class="mt-3">
+                            <button onclick="showUserDetails(${JSON.stringify(user).replace(/"/g, '&quot;')})" class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg text-sm hover:bg-blue-600 transition-colors">
+                                👀 ดูรายละเอียด
+                            </button>
+                        </div>
                     `;
                     usersListContainer.appendChild(userDiv);
                 });
