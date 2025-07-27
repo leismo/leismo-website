@@ -422,19 +422,21 @@
                 </div>
 
                 <div class="text-center mb-6">
-                    <h3 class="text-lg font-semibold mb-4 brand-color">QR Code สำหรับแอดมินตรวจสอบ</h3>
-                    <div class="bg-white p-4 rounded-lg border-2 inline-block" style="border-color: #B19D87;">
-                        <canvas id="qr-code" class="mx-auto"></canvas>
+                    <h3 class="text-lg font-semibold mb-4 brand-color">รหัสคูปองสำหรับแอดมิน</h3>
+                    <div class="bg-white p-6 rounded-lg border-2 inline-block" style="border-color: #B19D87;">
+                        <div class="text-4xl mb-3 brand-color">🎫</div>
+                        <div class="font-mono text-2xl font-bold tracking-wider mb-2 select-all cursor-pointer" style="color: #B19D87;" id="coupon-display-code-large" onclick="copyCouponCode()">LEISMO123456</div>
+                        <div class="text-sm text-gray-600">รหัสคูปอง (คลิกเพื่อคัดลอก)</div>
                     </div>
-                    <p class="text-sm text-gray-600 mt-2">📱 แอดมินสแกน QR Code นี้เพื่อตรวจสอบคูปองโดยตรง</p>
+                    <p class="text-sm text-gray-600 mt-3">📝 แอดมินกรอกรหัสนี้ในระบบตรวจสอบ</p>
                 </div>
 
                 <div class="bg-blue-50 p-4 rounded-lg mb-4">
                     <h4 class="font-semibold text-blue-800 mb-2">📋 วิธีการใช้งาน</h4>
                     <ol class="text-sm text-blue-700 space-y-1">
-                        <li>1. แสดง QR Code นี้ให้แอดมิน</li>
-                        <li>2. แอดมินสแกนด้วยกล้องมือถือ</li>
-                        <li>3. ระบบจะตรวจสอบคูปองอัตโนมัติ</li>
+                        <li>1. แสดงรหัสคูปองนี้ให้แอดมิน</li>
+                        <li>2. แอดมินกรอกรหัสในระบบตรวจสอบ</li>
+                        <li>3. ระบบจะตรวจสอบสถานะอัตโนมัติ</li>
                         <li>4. หรือส่งรูปภาพให้แอดมินผ่าน Line</li>
                     </ol>
                 </div>
@@ -450,8 +452,11 @@
             </div>
 
             <div class="p-6 border-t bg-gray-50 flex gap-3 sticky bottom-0 rounded-b-2xl">
-                <button onclick="downloadCoupon()" class="flex-1 bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600 transition-colors">
-                    💾 บันทึกรูปภาพ
+                <button onclick="copyCouponCode()" class="flex-1 bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600 transition-colors">
+                    📋 คัดลอกรหัส
+                </button>
+                <button onclick="downloadCoupon()" class="flex-1 bg-purple-500 text-white py-3 rounded-lg font-semibold hover:bg-purple-600 transition-colors">
+                    💾 บันทึกรูป
                 </button>
                 <button onclick="openLineChat()" class="flex-1 bg-green-500 text-white py-3 rounded-lg font-semibold hover:bg-green-600 transition-colors">
                     💬 ใช้คูปอง
@@ -1216,6 +1221,54 @@
             // เปิด Line Chat โดยตรง
             window.open('https://lin.ee/EVNhIRq', '_blank');
         };
+
+        // Copy coupon code function
+        window.copyCouponCode = function() {
+            const codeElement = document.getElementById('coupon-display-code-large');
+            const code = codeElement.textContent;
+            
+            // Try to copy to clipboard
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(code).then(() => {
+                    showCopySuccess();
+                }).catch(() => {
+                    fallbackCopy(code);
+                });
+            } else {
+                fallbackCopy(code);
+            }
+        };
+
+        function fallbackCopy(text) {
+            // Fallback method for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showCopySuccess();
+            } catch (err) {
+                console.error('Could not copy text: ', err);
+                alert('ไม่สามารถคัดลอกได้ กรุณาคัดลอกด้วยตนเอง');
+            }
+            document.body.removeChild(textArea);
+        }
+
+        function showCopySuccess() {
+            const codeElement = document.getElementById('coupon-display-code-large');
+            const originalText = codeElement.textContent;
+            
+            // Show success message
+            codeElement.textContent = '✅ คัดลอกแล้ว!';
+            codeElement.style.color = '#10B981';
+            
+            // Reset after 2 seconds
+            setTimeout(() => {
+                codeElement.textContent = originalText;
+                codeElement.style.color = '#B19D87';
+            }, 2000);
+        }
 
         window.downloadCoupon = function() {
             // Create a temporary canvas to capture the coupon
