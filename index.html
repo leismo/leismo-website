@@ -272,7 +272,48 @@
         </div>
     </div>
 
-    <!-- Scanner Page -->
+    <!-- Coupon Verification Page (สำหรับแอดมิน) -->
+    <div id="page-verify" class="hidden min-h-screen py-8 px-4 secondary-bg">
+        <div class="container mx-auto max-w-2xl">
+            <!-- Admin Authentication -->
+            <div id="admin-auth-section" class="bg-white rounded-lg shadow-lg p-6 md:p-8">
+                <div class="text-center mb-6">
+                    <div class="text-4xl mb-4">🔐</div>
+                    <h1 class="text-2xl font-bold brand-color">ยืนยันตัวตนแอดมิน</h1>
+                    <p class="text-gray-600 mt-2">กรุณาใส่รหัสผ่านแอดมินเพื่อตรวจสอบคูปอง</p>
+                </div>
+                
+                <div id="admin-verify-error" class="hidden mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded"></div>
+                
+                <form onsubmit="verifyAdminAccess(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2 brand-color">รหัสผ่านแอดมิน</label>
+                        <input type="password" id="admin-verify-password" required class="w-full p-3 border rounded-lg" placeholder="ใส่รหัสผ่านแอดมิน">
+                    </div>
+                    <button type="submit" class="w-full text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-colors shadow-lg brand-bg" id="admin-verify-submit">
+                        🔓 เข้าสู่ระบบตรวจสอบ
+                    </button>
+                </form>
+                
+                <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                    <p class="text-sm text-blue-800">💡 <strong>รหัสผ่านแอดมิน:</strong> admin123</p>
+                </div>
+            </div>
+
+            <!-- Coupon Check Section (แสดงหลังจากยืนยันตัวตน) -->
+            <div id="coupon-check-section" class="hidden bg-white rounded-lg shadow-lg p-6 md:p-8">
+                <div class="text-center mb-6">
+                    <div class="text-4xl mb-4">🎫</div>
+                    <h1 class="text-2xl font-bold brand-color">ตรวจสอบสถานะคูปอง</h1>
+                    <p class="text-gray-600 mt-2">รหัสคูปอง: <span class="font-mono font-bold" id="checking-coupon-code"></span></p>
+                </div>
+
+                <div id="coupon-status-result">
+                    <!-- ผลการตรวจสอบจะแสดงที่นี่ -->
+                </div>
+            </div>
+        </div>
+    </div>
     <div id="page-scanner" class="hidden min-h-screen py-8 px-4 secondary-bg">
         <div class="container mx-auto max-w-4xl">
             <div class="bg-white rounded-lg shadow-lg p-6 md:p-8">
@@ -1116,6 +1157,10 @@
             const verificationUrl = `${window.location.origin}${window.location.pathname}#verify-${coupon.code}`;
             
             if (typeof QRCode !== 'undefined') {
+                // ล้าง canvas เก่า
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
                 QRCode.toCanvas(canvas, verificationUrl, {
                     width: 200,
                     height: 200,
@@ -1123,24 +1168,43 @@
                         dark: '#B19D87',
                         light: '#FFFFFF'
                     },
-                    errorCorrectionLevel: 'M'
+                    errorCorrectionLevel: 'M',
+                    margin: 2
                 }, function(error) {
                     if (error) {
                         console.error('QR Code error:', error);
+                        // Fallback: แสดงข้อความแทน
+                        showFallbackQR(canvas, coupon.code);
                     }
                 });
             } else {
-                canvas.width = 200;
-                canvas.height = 200;
-                const ctx = canvas.getContext('2d');
-                ctx.fillStyle = '#e0e0e0';
-                ctx.fillRect(0, 0, 200, 200);
-                ctx.fillStyle = '#666';
-                ctx.font = '12px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText('QR Code', 100, 100);
-                ctx.fillText(coupon.code, 100, 120);
+                showFallbackQR(canvas, coupon.code);
             }
+        }
+
+        function showFallbackQR(canvas, code) {
+            canvas.width = 200;
+            canvas.height = 200;
+            const ctx = canvas.getContext('2d');
+            
+            // Background
+            ctx.fillStyle = '#f0f0f0';
+            ctx.fillRect(0, 0, 200, 200);
+            
+            // Border
+            ctx.strokeStyle = '#B19D87';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(10, 10, 180, 180);
+            
+            // Text
+            ctx.fillStyle = '#666';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('QR Code', 100, 80);
+            ctx.font = '12px monospace';
+            ctx.fillText(code, 100, 100);
+            ctx.font = '10px Arial';
+            ctx.fillText('สำหรับแอดมิน', 100, 130);
         }
 
         window.closeCouponModal = function() {
@@ -1543,36 +1607,294 @@
             }
         }
 
+        // Admin verification for coupon checking
+        window.verifyAdminAccess = function(event) {
+            event.preventDefault();
+            
+            const password = document.getElementById('admin-verify-password').value;
+            const submitBtn = document.getElementById('admin-verify-submit');
+            
+            if (!password) {
+                showError('admin-verify-error', 'กรุณาใส่รหัสผ่าน');
+                return;
+            }
+            
+            submitBtn.textContent = 'กำลังตรวจสอบ...';
+            submitBtn.disabled = true;
+            
+            // Check admin password
+            if (password === 'admin123') {
+                hideError('admin-verify-error');
+                document.getElementById('admin-auth-section').classList.add('hidden');
+                document.getElementById('coupon-check-section').classList.remove('hidden');
+                
+                // Process the coupon code from URL
+                const hash = window.location.hash;
+                if (hash.startsWith('#verify-')) {
+                    const couponCode = hash.replace('#verify-', '');
+                    document.getElementById('checking-coupon-code').textContent = couponCode;
+                    checkCouponStatus(couponCode);
+                }
+            } else {
+                showError('admin-verify-error', 'รหัสผ่านไม่ถูกต้อง');
+            }
+            
+            submitBtn.textContent = '🔓 เข้าสู่ระบบตรวจสอบ';
+            submitBtn.disabled = false;
+        };
+
+        // Check coupon status for verification page
+        async function checkCouponStatus(couponCode) {
+            const resultContainer = document.getElementById('coupon-status-result');
+            resultContainer.innerHTML = '<div class="text-center py-8"><div class="animate-spin text-4xl">⏳</div><p class="mt-2">กำลังตรวจสอบ...</p></div>';
+            
+            try {
+                const { collection, getDocs } = window.firebaseLibs;
+                const usersRef = collection(window.db, 'users');
+                const querySnapshot = await getDocs(usersRef);
+                
+                let couponFound = null;
+                let ownerData = null;
+
+                querySnapshot.forEach((doc) => {
+                    const userData = doc.data();
+                    const userCoupons = userData.coupons || [];
+                    const foundCoupon = userCoupons.find(c => c.code === couponCode);
+                    
+                    if (foundCoupon) {
+                        couponFound = foundCoupon;
+                        ownerData = userData;
+                    }
+                });
+
+                if (!couponFound) {
+                    showCouponResult({
+                        status: 'invalid',
+                        coupon: { code: couponCode, name: 'ไม่พบคูปอง' },
+                        owner: { name: 'ไม่พบข้อมูล' }
+                    });
+                    return;
+                }
+
+                // Check status
+                const isExpired = new Date() > new Date(couponFound.expiryTimestamp);
+                let status = 'valid';
+                if (couponFound.used) {
+                    status = 'used';
+                } else if (isExpired) {
+                    status = 'expired';
+                }
+
+                showCouponResult({
+                    status: status,
+                    coupon: couponFound,
+                    owner: ownerData
+                });
+
+            } catch (error) {
+                console.error('Error checking coupon:', error);
+                resultContainer.innerHTML = '<div class="text-center py-8 text-red-600"><div class="text-4xl">❌</div><p class="mt-2">เกิดข้อผิดพลาดในการตรวจสอบ</p></div>';
+            }
+        }
+
+        function showCouponResult(result) {
+            const container = document.getElementById('coupon-status-result');
+            
+            let statusColor, statusIcon, statusText, statusBg;
+            
+            switch (result.status) {
+                case 'valid':
+                    statusColor = 'text-green-800';
+                    statusBg = 'bg-green-50 border-green-200';
+                    statusIcon = '✅';
+                    statusText = 'คูปองใช้ได้';
+                    break;
+                case 'used':
+                    statusColor = 'text-red-800';
+                    statusBg = 'bg-red-50 border-red-200';
+                    statusIcon = '❌';
+                    statusText = 'คูปองใช้แล้ว';
+                    break;
+                case 'expired':
+                    statusColor = 'text-orange-800';
+                    statusBg = 'bg-orange-50 border-orange-200';
+                    statusIcon = '⏰';
+                    statusText = 'คูปองหมดอายุ';
+                    break;
+                default:
+                    statusColor = 'text-red-800';
+                    statusBg = 'bg-red-50 border-red-200';
+                    statusIcon = '🚫';
+                    statusText = 'คูปองไม่ถูกต้อง';
+            }
+
+            const canUse = result.status === 'valid';
+            const coupon = result.coupon;
+            const owner = result.owner;
+
+            container.innerHTML = `
+                <div class="border-2 rounded-lg p-6 ${statusBg}">
+                    <div class="text-center mb-6">
+                        <div class="text-6xl mb-4">${statusIcon}</div>
+                        <h2 class="text-2xl font-bold ${statusColor}">${statusText}</h2>
+                    </div>
+
+                    ${coupon.name !== 'ไม่พบคูปอง' ? `
+                        <div class="grid md:grid-cols-2 gap-6 mb-6">
+                            <div class="space-y-3">
+                                <h3 class="text-lg font-semibold text-gray-800">ข้อมูลคูปอง</h3>
+                                <div class="space-y-2 text-sm">
+                                    <p><strong>รหัส:</strong> ${coupon.code}</p>
+                                    <p><strong>ชื่อ:</strong> ${coupon.name}</p>
+                                    <p><strong>มูลค่า:</strong> ${coupon.type === 'coupon' ? `฿${coupon.value}` : `${coupon.value}%`}</p>
+                                    <p><strong>ได้รับ:</strong> ${coupon.createdDate}</p>
+                                    <p><strong>หมดอายุ:</strong> ${coupon.expiryDate}</p>
+                                    ${coupon.used ? `<p><strong>ใช้เมื่อ:</strong> ${coupon.usedDate || 'ไม่ระบุ'}</p>` : ''}
+                                </div>
+                            </div>
+
+                            <div class="space-y-3">
+                                <h3 class="text-lg font-semibold text-gray-800">ข้อมูลลูกค้า</h3>
+                                <div class="space-y-2 text-sm">
+                                    <p><strong>ชื่อ:</strong> ${owner.name}</p>
+                                    <p><strong>อีเมล:</strong> ${owner.email}</p>
+                                    <p><strong>ระดับสมาชิก:</strong> ${owner.tier}</p>
+                                    <p><strong>แต้มปัจจุบัน:</strong> ${owner.points?.toLocaleString() || '0'} แต้ม</p>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${canUse ? `
+                        <div class="text-center">
+                            <button onclick="useCouponFromVerify('${coupon.code}')" class="bg-green-500 text-white px-8 py-4 rounded-lg font-semibold hover:bg-green-600 text-lg">
+                                ✅ ยืนยันการใช้คูปอง
+                            </button>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="mt-6 text-center">
+                        <button onclick="goBackToHome()" class="bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600">
+                            🏠 กลับหน้าหลัก
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Use coupon from verification page
+        window.useCouponFromVerify = async function(couponCode) {
+            if (!confirm(`ยืนยันการใช้คูปอง ${couponCode}?`)) {
+                return;
+            }
+
+            try {
+                const { collection, getDocs, doc, updateDoc } = window.firebaseLibs;
+                const usersRef = collection(window.db, 'users');
+                const querySnapshot = await getDocs(usersRef);
+                
+                let foundUser = null;
+                let couponIndex = -1;
+
+                querySnapshot.forEach((docSnapshot) => {
+                    const userData = docSnapshot.data();
+                    const userCoupons = userData.coupons || [];
+                    const index = userCoupons.findIndex(c => c.code === couponCode);
+                    
+                    if (index !== -1) {
+                        foundUser = { id: docSnapshot.id, data: userData };
+                        couponIndex = index;
+                    }
+                });
+
+                if (foundUser && couponIndex !== -1) {
+                    // Mark coupon as used
+                    foundUser.data.coupons[couponIndex].used = true;
+                    foundUser.data.coupons[couponIndex].usedDate = formatThaiDate(new Date());
+                    foundUser.data.coupons[couponIndex].usedTimestamp = new Date().toISOString();
+
+                    // Update in Firestore
+                    const userRef = doc(window.db, 'users', foundUser.id);
+                    await updateDoc(userRef, {
+                        coupons: foundUser.data.coupons
+                    });
+
+                    alert('✅ ยืนยันการใช้คูปองสำเร็จ!');
+                    
+                    // Refresh the status
+                    checkCouponStatus(couponCode);
+                } else {
+                    alert('ไม่พบคูปองที่ระบุ');
+                }
+
+            } catch (error) {
+                console.error('Error using coupon:', error);
+                alert('เกิดข้อผิดพลาดในการใช้คูปอง');
+            }
+        };
+
+        window.goBackToHome = function() {
+            history.replaceState(null, null, window.location.pathname);
+            showPage('home');
+        };
+
         // Handle QR Code verification URL
         function handleVerificationUrl() {
             const hash = window.location.hash;
             if (hash.startsWith('#verify-')) {
                 const couponCode = hash.replace('#verify-', '');
                 
-                // Check if user is admin
-                if (!window.isLoggedIn || !window.currentUser?.isAdmin) {
-                    alert('🚫 กรุณาเข้าสู่ระบบแอดมินเพื่อตรวจสอบคูปอง');
+                // Go to verification page
+                showPage('verify');
+                
+                // Reset the form
+                document.getElementById('admin-auth-section').classList.remove('hidden');
+                document.getElementById('coupon-check-section').classList.add('hidden');
+                document.getElementById('admin-verify-password').value = '';
+                hideError('admin-verify-error');
+            }
+        }
+
+        // Update showPage function to handle verify page
+        const originalShowPage = window.showPage;
+        window.showPage = function(pageName) {
+            const pages = ['home', 'login', 'register', 'loyalty', 'admin', 'scanner', 'verify'];
+            pages.forEach(page => {
+                const pageElement = document.getElementById(`page-${page}`);
+                if (pageElement) {
+                    pageElement.classList.add('hidden');
+                }
+            });
+
+            const targetPage = document.getElementById(`page-${pageName}`);
+            if (targetPage) {
+                targetPage.classList.remove('hidden');
+            }
+
+            updateNavigation(pageName);
+
+            if (pageName === 'loyalty') {
+                if (!window.isLoggedIn) {
                     showPage('login');
                     return;
                 }
-                
-                // Go to scanner page and auto-fill the coupon code
-                showPage('scanner');
-                showScannerTab('code');
-                
-                // Auto-fill and process the coupon code
-                setTimeout(() => {
-                    const codeInput = document.getElementById('coupon-code-input');
-                    if (codeInput) {
-                        codeInput.value = couponCode;
-                        processCouponCode();
-                    }
-                }, 500);
-                
-                // Clear the hash
-                history.replaceState(null, null, window.location.pathname);
+                updateLoyaltyPage();
+            } else if (pageName === 'admin') {
+                if (!window.isLoggedIn || !window.currentUser?.isAdmin) {
+                    alert('⚠️ ไม่มีสิทธิ์เข้าถึงหน้านี้\nเฉพาะแอดมินเท่านั้น');
+                    showPage('home');
+                    return;
+                }
+                loadAdminData();
+            } else if (pageName === 'scanner') {
+                if (!window.isLoggedIn || !window.currentUser?.isAdmin) {
+                    alert('⚠️ ไม่มีสิทธิ์เข้าถึงหน้านี้\nเฉพาะแอดมินเท่านั้น');
+                    showPage('home');
+                    return;
+                }
             }
-        }
+            // Note: verify page doesn't need admin check as it has its own auth
+        };
 
         // Listen for hash changes (when QR code is scanned)
         window.addEventListener('hashchange', handleVerificationUrl);
