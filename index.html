@@ -293,10 +293,10 @@
                             <div class="mt-8 p-6 bg-blue-50 rounded-lg max-w-md mx-auto">
                                 <h3 class="font-semibold text-blue-800 mb-3">สิทธิประโยชน์ที่ได้รับ</h3>
                                 <ul class="text-sm text-blue-700 space-y-1 text-left">
-                                    <li>• แต้มสะสมทุกการซื้อ</li>
-                                    <li>• คูปองส่วนลดพิเศษ</li>
-                                    <li>• โปรโมชั่นเฉพาะสมาชิก</li>
-                                    <li>• อัพเกรดระดับสมาชิก</li>
+                                    <li>แต้มสะสมทุกการซื้อ</li>
+                                    <li>คูปองส่วนลดพิเศษ</li>
+                                    <li>โปรโมชั่นเฉพาะสมาชิก</li>
+                                    <li>อัพเกรดระดับสมาชิก</li>
                                 </ul>
                             </div>
                         </div>
@@ -365,39 +365,35 @@
                             </div>
                         </div>
                         
+                        <!-- Progress to Next Tier - ย้ายมาใต้บัตรจริงๆ -->
+                        <div class="mt-4 p-4 bg-white rounded-lg shadow-sm max-w-2xl mx-auto hidden" id="tier-progress-section">
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-sm font-medium text-gray-700" id="progress-current-tier">Bronze</span>
+                                <span class="text-sm font-medium text-gray-700" id="progress-next-tier">Silver</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2 mb-3">
+                                <div class="h-2 rounded-full transition-all duration-500" style="width: 0%" id="progress-bar"></div>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-sm text-gray-600">
+                                    ซื้อสินค้าอีก <span class="font-semibold" id="progress-amount">5,001฿</span> 
+                                    เพื่ออัพเกรดเป็น <span class="font-semibold" id="progress-target-tier">Silver</span>
+                                </p>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    ยอดซื้อปัจจุบัน: <span id="progress-current-spend">0฿</span>
+                                </p>
+                            </div>
+                        </div>
+                        
                         <!-- Tier Info -->
                         <div class="mt-6 p-6 bg-white rounded-lg shadow-md border-l-4 border-blue-500 max-w-2xl mx-auto hidden" id="tier-info-section">
-                            <h4 class="text-lg font-semibold mb-3 brand-color flex items-center">
-                                <span class="mr-2">💡</span> 
+                            <h4 class="text-lg font-semibold mb-3 brand-color">
                                 <span id="current-tier-title">ข้อมูล Bronze</span>
                             </h4>
                             <div class="text-sm text-gray-700 space-y-1" id="tier-info">
                                 <p>• ใช้จ่าย: 0-5,000฿</p>
                                 <p>• ส่วนลด: 5%</p>
                                 <p>• คูปองพิเศษ: 1/เดือน</p>
-                            </div>
-                        </div>
-
-                        <!-- Progress to Next Tier -->
-                        <div class="mt-6 p-6 bg-white rounded-lg shadow-md max-w-2xl mx-auto hidden" id="tier-progress-section">
-                            <h4 class="text-lg font-semibold mb-4 brand-color">ความคืบหน้าการอัพเกรด</h4>
-                            <div class="space-y-3">
-                                <div class="flex justify-between text-sm">
-                                    <span id="progress-current-tier">Bronze</span>
-                                    <span id="progress-next-tier">Silver</span>
-                                </div>
-                                <div class="w-full bg-gray-200 rounded-full h-3">
-                                    <div class="brand-bg h-3 rounded-full transition-all duration-500" style="width: 0%" id="progress-bar"></div>
-                                </div>
-                                <div class="text-center">
-                                    <p class="text-sm text-gray-600">
-                                        ซื้อสินค้าอีก <span class="font-bold brand-color" id="progress-amount">5,001฿</span> 
-                                        เพื่ออัพเกรดเป็น <span class="font-bold brand-color" id="progress-target-tier">Silver</span>
-                                    </p>
-                                    <p class="text-xs text-gray-500 mt-1">
-                                        ยอดซื้อปัจจุบัน: <span id="progress-current-spend">0฿</span>
-                                    </p>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -425,12 +421,12 @@
                             <p class="text-2xl font-bold brand-color" id="dashboard-tier">Bronze</p>
                         </div>
                         <div class="text-center p-6 rounded-lg secondary-bg">
-                            <div class="text-6xl mb-4">⭐</div>
+                            <div class="text-6xl mb-4">★</div>
                             <h3 class="text-xl font-semibold mb-2 brand-color">แต้มสะสม</h3>
                             <p class="text-2xl font-bold brand-color" id="dashboard-points">0</p>
                         </div>
                         <div class="text-center p-6 rounded-lg secondary-bg">
-                            <div class="text-6xl mb-4">🎁</div>
+                            <div class="text-6xl mb-4">◉</div>
                             <h3 class="text-xl font-semibold mb-2 brand-color">คูปองที่มี</h3>
                             <p class="text-2xl font-bold brand-color" id="dashboard-coupons">0</p>
                         </div>
@@ -1339,33 +1335,45 @@
                 if (isUserTier) {
                     // Show real user data for their actual tier
                     card.style.filter = 'none';
-                    document.getElementById('card-member-name').textContent = window.currentUser.name;
+                    
+                    // Handle name display - center if single name, balance if full name
+                    const fullName = window.currentUser.name;
+                    const nameParts = fullName.split(' ');
+                    if (nameParts.length === 1) {
+                        // Single name - center it
+                        document.getElementById('card-member-name').textContent = fullName;
+                        document.getElementById('card-member-name').style.textAlign = 'center';
+                    } else {
+                        // Full name - balance layout
+                        document.getElementById('card-member-name').textContent = fullName;
+                        document.getElementById('card-member-name').style.textAlign = 'center';
+                    }
+                    
                     document.getElementById('card-member-email').textContent = window.currentUser.email;
                     document.getElementById('card-member-id').textContent = window.currentUser.memberID || 'XXXX XXXX XXX';
                     document.getElementById('card-points').textContent = (window.currentUser.points || 0).toLocaleString();
                     
-                    // Format member since date - แบบ คส เทน ปีสากล
+                    // Format member since date - แบบสั้น 1/2/25
                     if (window.currentUser.createdAt) {
-                        const memberSince = new Date(window.currentUser.createdAt).toLocaleDateString('th', {
-                            day: 'numeric',
-                            month: 'short',
-                            year: '2-digit',
-                            calendar: 'gregory'
-                        });
+                        const date = new Date(window.currentUser.createdAt);
+                        const day = date.getDate();
+                        const month = date.getMonth() + 1;
+                        const year = date.getFullYear().toString().slice(-2);
+                        const memberSince = `${day}/${month}/${year}`;
                         document.getElementById('card-member-since').textContent = memberSince;
                     }
                 } else {
                     // Blur and hide personal data for other tiers
                     card.style.filter = 'blur(2px)';
                     document.getElementById('card-member-name').textContent = 'Preview Mode';
+                    document.getElementById('card-member-name').style.textAlign = 'center';
                     document.getElementById('card-member-email').textContent = 'member@example.com';
                     document.getElementById('card-member-id').textContent = 'XXXX XXXX XXX';
                     document.getElementById('card-points').textContent = '---';
-                    document.getElementById('card-member-since').textContent = '--/--/----';
+                    document.getElementById('card-member-since').textContent = '--/--/--';
                 }
                 
-                // Update tier display
-                document.getElementById('card-tier-icon').textContent = data.icon;
+                // Update tier display - เอาไอคอนออก
                 document.getElementById('card-tier-name').textContent = data.name;
                 
                 // Update tier info
@@ -1440,14 +1448,13 @@
             document.getElementById('card-member-id').textContent = window.currentUser.memberID || 'XXXX XXXX XXX';
             document.getElementById('card-points').textContent = (window.currentUser.points || 0).toLocaleString();
             
-            // Format member since date - แสดงวันที่แบบ คส เทน ปีสากล
+            // Format member since date - แสดงวันที่แบบสั้น 1/2/25
             if (window.currentUser.createdAt) {
-                const memberSince = new Date(window.currentUser.createdAt).toLocaleDateString('th', {
-                    day: 'numeric',
-                    month: 'short',
-                    year: '2-digit',
-                    calendar: 'gregory'
-                });
+                const date = new Date(window.currentUser.createdAt);
+                const day = date.getDate();
+                const month = date.getMonth() + 1;
+                const year = date.getFullYear().toString().slice(-2);
+                const memberSince = `${day}/${month}/${year}`;
                 document.getElementById('card-member-since').textContent = memberSince;
             }
 
@@ -1492,7 +1499,15 @@
             // Update progress elements
             document.getElementById('progress-current-tier').textContent = currentTierData.name;
             document.getElementById('progress-next-tier').textContent = nextTierData.name;
-            document.getElementById('progress-bar').style.width = progressPercent + '%';
+            
+            // Set progress bar color to match current tier
+            const progressBar = document.getElementById('progress-bar');
+            const tierColor = currentTierData.bgGradient.match(/#[a-fA-F0-9]{6}/g);
+            if (tierColor && tierColor[0]) {
+                progressBar.style.backgroundColor = tierColor[0];
+            }
+            progressBar.style.width = progressPercent + '%';
+            
             document.getElementById('progress-amount').textContent = remainingSpend.toLocaleString() + '฿';
             document.getElementById('progress-target-tier').textContent = nextTierData.name;
             document.getElementById('progress-current-spend').textContent = currentSpend.toLocaleString() + '฿';
