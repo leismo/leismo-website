@@ -57,8 +57,28 @@
         .card-flip {
             animation: cardFlip 0.6s ease-in-out;
         }
+
+        /* Card Slide In Animation */
+        @keyframes slideInCard {
+            0% { 
+                opacity: 0;
+                transform: scale(0.8) rotateY(-90deg); 
+            }
+            50% {
+                opacity: 0.5;
+                transform: scale(0.9) rotateY(-45deg);
+            }
+            100% { 
+                opacity: 1;
+                transform: scale(1) rotateY(0deg); 
+            }
+        }
         
-        /* Credit Card Responsive */
+        .card-slide-in {
+            animation: slideInCard 1.2s ease-out;
+        }
+        
+        /* Credit Card Responsive - ลดความสูง */
         @media (max-width: 768px) {
             #member-card {
                 margin-left: 50px !important;
@@ -84,6 +104,16 @@
                 height: 36px;
                 font-size: 18px;
             }
+        }
+
+        /* Activate Card Button Pulse */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .activate-button {
+            animation: pulse 2s infinite;
         }
     </style>
 </head>
@@ -248,30 +278,59 @@
                 <!-- Member Card Section -->
                 <div class="mb-8">
                     <div class="max-w-5xl mx-auto">
-                        <!-- Member Card with Navigation -->
-                        <div class="relative">
-                            <!-- Member Card (Credit Card Size) -->
-                            <div id="member-card" class="relative rounded-2xl p-6 text-white shadow-2xl transition-all duration-500 transform hover:scale-105 mx-16" style="background: linear-gradient(135deg, #526170 0%, #3a4651 100%); aspect-ratio: 16/10; max-width: 600px; margin-left: auto; margin-right: auto;">
+                        <!-- Card Activation Section (แสดงเมื่อยังไม่มีบัตร) -->
+                        <div id="card-activation-section" class="text-center py-16">
+                            <div class="mb-8">
+                                <div class="text-8xl mb-4">💳</div>
+                                <h2 class="text-3xl font-bold mb-4 brand-color">ยินดีต้อนรับสู่ Leismo!</h2>
+                                <p class="text-gray-600 text-lg mb-8">กดปุ่มด้านล่างเพื่อรับบัตรสมาชิกของคุณ</p>
+                            </div>
+                            
+                            <button onclick="activateMemberCard()" class="activate-button bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-12 py-4 rounded-full font-bold text-xl shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300">
+                                ✨ รับบัตรสมาชิก ✨
+                            </button>
+                            
+                            <div class="mt-8 p-6 bg-blue-50 rounded-lg max-w-md mx-auto">
+                                <h3 class="font-semibold text-blue-800 mb-3">🎁 สิทธิประโยชน์ที่ได้รับ</h3>
+                                <ul class="text-sm text-blue-700 space-y-1 text-left">
+                                    <li>• แต้มสะสมทุกการซื้อ</li>
+                                    <li>• คูปองส่วนลดพิเศษ</li>
+                                    <li>• โปรโมชั่นเฉพาะสมาชิก</li>
+                                    <li>• อัพเกรดระดับสมาชิก</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Member Card with Navigation (แสดงเมื่อมีบัตรแล้ว) -->
+                        <div class="relative hidden" id="member-card-section">
+                            <!-- Member Card (Credit Card Size - ลดความสูง) -->
+                            <div id="member-card" class="relative rounded-2xl p-6 text-white shadow-2xl transition-all duration-500 transform hover:scale-105 mx-16" style="background: linear-gradient(135deg, #526170 0%, #3a4651 100%); aspect-ratio: 18/10; max-width: 600px; margin-left: auto; margin-right: auto;">
                                 <!-- Card Content -->
                                 <div class="relative z-10 h-full flex flex-col justify-between">
                                     <!-- Top Section -->
                                     <div class="flex justify-between items-start">
                                         <div>
-                                            <img src="https://i.ibb.co/ds77x4rr/Leismo-Primarylogo-SItypo.png" alt="Leismo" class="h-6 w-auto mb-3">
-                                            <h3 class="text-xl font-bold mb-1" id="card-member-name">Member Name</h3>
+                                            <img src="https://i.ibb.co/ds77x4rr/Leismo-Primarylogo-SItypo.png" alt="Leismo" class="h-5 w-auto mb-2">
+                                            <h3 class="text-lg font-bold mb-1" id="card-member-name">Member Name</h3>
                                             <p class="text-xs opacity-90" id="card-member-email">member@email.com</p>
                                         </div>
                                         <div class="text-right">
-                                            <div class="text-3xl mb-1" id="card-tier-icon">🥉</div>
+                                            <div class="text-2xl mb-1" id="card-tier-icon">🥉</div>
                                             <div class="text-sm font-semibold" id="card-tier-name">Bronze</div>
                                         </div>
+                                    </div>
+                                    
+                                    <!-- Middle Section - Member ID -->
+                                    <div class="text-center">
+                                        <p class="text-xs opacity-75 mb-1">รหัสสมาชิก</p>
+                                        <p class="text-lg font-mono font-bold tracking-widest" id="card-member-id">XXXX XXXX XXX</p>
                                     </div>
                                     
                                     <!-- Bottom Section -->
                                     <div class="flex justify-between items-end">
                                         <div>
                                             <p class="text-xs opacity-75 mb-1">แต้มสะสม</p>
-                                            <p class="text-2xl font-bold" id="card-points">0</p>
+                                            <p class="text-xl font-bold" id="card-points">0</p>
                                         </div>
                                         <div class="text-right">
                                             <p class="text-xs opacity-75 mb-1">สมาชิกตั้งแต่</p>
@@ -282,9 +341,9 @@
                                 
                                 <!-- Card Background Pattern -->
                                 <div class="absolute inset-0 overflow-hidden rounded-2xl">
-                                    <div class="absolute -top-8 -right-8 w-24 h-24 bg-white opacity-5 rounded-full"></div>
-                                    <div class="absolute -bottom-8 -left-8 w-32 h-32 bg-white opacity-5 rounded-full"></div>
-                                    <div class="absolute top-1/2 right-4 w-16 h-16 bg-white opacity-5 rounded-full"></div>
+                                    <div class="absolute -top-8 -right-8 w-20 h-20 bg-white opacity-5 rounded-full"></div>
+                                    <div class="absolute -bottom-8 -left-8 w-24 h-24 bg-white opacity-5 rounded-full"></div>
+                                    <div class="absolute top-1/2 right-4 w-12 h-12 bg-white opacity-5 rounded-full"></div>
                                 </div>
                             </div>
                             
@@ -307,7 +366,7 @@
                         </div>
                         
                         <!-- Tier Info -->
-                        <div class="mt-6 p-6 bg-white rounded-lg shadow-md border-l-4 border-blue-500 max-w-2xl mx-auto">
+                        <div class="mt-6 p-6 bg-white rounded-lg shadow-md border-l-4 border-blue-500 max-w-2xl mx-auto hidden" id="tier-info-section">
                             <h4 class="text-lg font-semibold mb-3 brand-color flex items-center">
                                 <span class="mr-2">💡</span> 
                                 <span id="current-tier-title">ข้อมูล Bronze</span>
@@ -321,8 +380,8 @@
                     </div>
                 </div>
 
-                <!-- Navigation Tabs -->
-                <div class="flex border-b mb-8">
+                <!-- Navigation Tabs (แสดงเฉพาะเมื่อมีบัตรแล้ว) -->
+                <div class="flex border-b mb-8 hidden" id="loyalty-tabs">
                     <button onclick="showLoyaltyTab('dashboard')" class="loyalty-tab flex-1 py-4 px-6 font-semibold transition-colors border-b-2 brand-color" style="border-color: #B19D87; color: #B19D87;">
                         ⭐ แดชบอร์ด
                     </button>
@@ -335,7 +394,7 @@
                 </div>
 
                 <!-- Dashboard Tab -->
-                <div id="loyalty-dashboard" class="loyalty-content">
+                <div id="loyalty-dashboard" class="loyalty-content hidden">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div class="text-center p-6 rounded-lg secondary-bg">
                             <div class="text-6xl mb-4">🏆</div>
@@ -485,6 +544,10 @@
                                 <label class="text-sm font-medium text-gray-600">วันเกิด</label>
                                 <p class="text-sm" id="user-detail-birthdate">-</p>
                             </div>
+                            <div>
+                                <label class="text-sm font-medium text-gray-600">รหัสสมาชิก</label>
+                                <p class="font-mono text-lg font-bold brand-color" id="user-detail-member-id">-</p>
+                            </div>
                         </div>
                         <div class="space-y-3">
                             <div>
@@ -498,6 +561,10 @@
                             <div>
                                 <label class="text-sm font-medium text-gray-600">ระดับสมาชิก</label>
                                 <p class="font-semibold" id="user-detail-tier">-</p>
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-gray-600">สถานะบัตร</label>
+                                <p class="text-sm" id="user-detail-card-status">-</p>
                             </div>
                         </div>
                     </div>
@@ -539,99 +606,28 @@
         </div>
     </div>
 
-    <!-- Coupon Verification Page (สำหรับแอดมิน) -->
-    <div id="page-verify" class="hidden min-h-screen py-8 px-4 secondary-bg">
-        <div class="container mx-auto max-w-2xl">
-            <!-- Admin Authentication -->
-            <div id="admin-auth-section" class="bg-white rounded-lg shadow-lg p-6 md:p-8">
-                <div class="text-center mb-6">
-                    <div class="text-4xl mb-4">🔐</div>
-                    <h1 class="text-2xl font-bold brand-color">ยืนยันตัวตนแอดมิน</h1>
-                    <p class="text-gray-600 mt-2">กรุณาใส่รหัสผ่านแอดมินเพื่อตรวจสอบคูปอง</p>
-                </div>
-                
-                <div id="admin-verify-error" class="hidden mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded"></div>
-                
-                <form onsubmit="verifyAdminAccess(event)" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-2 brand-color">รหัสผ่านแอดมิน</label>
-                        <input type="password" id="admin-verify-password" required class="w-full p-3 border rounded-lg" placeholder="ใส่รหัสผ่านแอดมิน">
-                    </div>
-                    <button type="submit" class="w-full text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-colors shadow-lg brand-bg" id="admin-verify-submit">
-                        🔓 เข้าสู่ระบบตรวจสอบ
-                    </button>
-                </form>
-                
-                <div class="mt-6 p-4 bg-blue-50 rounded-lg">
-                    <p class="text-sm text-blue-800">💡 <strong>รหัสผ่านแอดมิน:</strong> admin123</p>
-                </div>
-            </div>
-
-            <!-- Coupon Check Section (แสดงหลังจากยืนยันตัวตน) -->
-            <div id="coupon-check-section" class="hidden bg-white rounded-lg shadow-lg p-6 md:p-8">
-                <div class="text-center mb-6">
-                    <div class="text-4xl mb-4">🎫</div>
-                    <h1 class="text-2xl font-bold brand-color">ตรวจสอบสถานะคูปอง</h1>
-                    <p class="text-gray-600 mt-2">รหัสคูปอง: <span class="font-mono font-bold" id="checking-coupon-code"></span></p>
-                </div>
-
-                <div id="coupon-status-result">
-                    <!-- ผลการตรวจสอบจะแสดงที่นี่ -->
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Scanner Page -->
     <div id="page-scanner" class="hidden min-h-screen py-8 px-4 secondary-bg">
         <div class="container mx-auto max-w-4xl">
             <div class="bg-white rounded-lg shadow-lg p-6 md:p-8">
-                <h1 class="text-2xl md:text-3xl font-bold mb-6 brand-color">📱 ตรวจสอบคูปอง</h1>
+                <h1 class="text-2xl md:text-3xl font-bold mb-6 brand-color">📱 ตรวจสอบคูปอง & บัตรสมาชิก</h1>
                 
                 <!-- Tab Navigation -->
                 <div class="flex border-b mb-8">
-                    <button onclick="showScannerTab('qr')" class="scanner-tab flex-1 py-4 px-6 font-semibold transition-colors border-b-2 brand-color" style="border-color: #B19D87; color: #B19D87;" id="tab-qr">
-                        📱 สแกน QR Code
+                    <button onclick="showScannerTab('coupon')" class="scanner-tab flex-1 py-4 px-6 font-semibold transition-colors border-b-2 brand-color" style="border-color: #B19D87; color: #B19D87;" id="tab-coupon">
+                        🎫 ตรวจสอบคูปอง
                     </button>
-                    <button onclick="showScannerTab('code')" class="scanner-tab flex-1 py-4 px-6 font-semibold transition-colors text-gray-600 hover:bg-gray-50" id="tab-code">
-                        🔤 กรอกรหัสคูปอง
+                    <button onclick="showScannerTab('member')" class="scanner-tab flex-1 py-4 px-6 font-semibold transition-colors text-gray-600 hover:bg-gray-50" id="tab-member">
+                        💳 ตรวจสอบบัตรสมาชิก
                     </button>
                 </div>
 
-                <!-- QR Scanner Tab -->
-                <div id="scanner-qr" class="scanner-content">
+                <!-- Coupon Scanner Tab -->
+                <div id="scanner-coupon" class="scanner-content">
                     <div class="text-center mb-8">
-                        <div class="text-6xl mb-4">📝</div>
-                        <h3 class="text-xl font-semibold mb-4 brand-color">ใส่รหัสคูปองหรือ QR Code</h3>
-                        <p class="text-gray-600 mb-6">ใส่รหัสคูปองโดยตรง หรือวาง JSON ข้อมูล QR Code</p>
-                    </div>
-                    
-                    <div class="max-w-md mx-auto">
-                        <h4 class="font-semibold mb-4 brand-color">รหัสคูปอง หรือ JSON ข้อมูล QR Code</h4>
-                        <div class="space-y-4">
-                            <textarea id="qr-data-input" rows="4" class="w-full p-3 border rounded-lg" placeholder='ใส่รหัสคูปอง: LEISMO123456
-
-หรือ JSON ข้อมูล QR Code:
-{"type":"LEISMO_COUPON","code":"LEISMO123456",...}'></textarea>
-                            <button onclick="processQRData()" class="w-full brand-bg text-white py-3 rounded-lg hover:opacity-90 font-semibold">
-                                🔍 ตรวจสอบ
-                            </button>
-                        </div>
-                        
-                        <div class="mt-6 p-4 bg-green-50 rounded-lg">
-                            <h5 class="font-semibold text-green-800 mb-2">💡 รองรับ 2 รูปแบบ</h5>
-                            <ul class="text-sm text-green-700 space-y-1">
-                                <li>• <strong>รหัสคูปอง:</strong> LEISMO123456</li>
-                                <li>• <strong>JSON QR Code:</strong> {"type":"LEISMO_COUPON",...}</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Code Input Tab -->
-                <div id="scanner-code" class="scanner-content hidden">
-                    <div class="text-center mb-8">
-                        <div class="text-6xl mb-4">🔤</div>
-                        <h3 class="text-xl font-semibold mb-4 brand-color">กรอกรหัสคูปอง</h3>
-                        <p class="text-gray-600 mb-6">ให้ลูกค้าบอกรหัสคูปอง แล้วกรอกเพื่อตรวจสอบ</p>
+                        <div class="text-6xl mb-4">🎫</div>
+                        <h3 class="text-xl font-semibold mb-4 brand-color">ตรวจสอบคูปองส่วนลด</h3>
+                        <p class="text-gray-600 mb-6">ใส่รหัสคูปองเพื่อตรวจสอบสถานะ</p>
                     </div>
                     
                     <div class="max-w-md mx-auto">
@@ -658,8 +654,41 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Member Scanner Tab -->
+                <div id="scanner-member" class="scanner-content hidden">
+                    <div class="text-center mb-8">
+                        <div class="text-6xl mb-4">💳</div>
+                        <h3 class="text-xl font-semibold mb-4 brand-color">ตรวจสอบบัตรสมาชิก</h3>
+                        <p class="text-gray-600 mb-6">ใส่รหัสสมาชิกเพื่อดูข้อมูลและประวัติ</p>
+                    </div>
+                    
+                    <div class="max-w-md mx-auto">
+                        <h4 class="font-semibold mb-4 brand-color">รหัสสมาชิก</h4>
+                        <div class="space-y-4">
+                            <div class="relative">
+                                <input type="text" id="member-id-input" class="w-full p-4 border rounded-lg text-center font-mono text-lg tracking-wider uppercase" placeholder="ED 1202 3033 403" maxlength="15">
+                                <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                                    💳
+                                </div>
+                            </div>
+                            <button onclick="processMemberCard()" class="w-full brand-bg text-white py-3 rounded-lg hover:opacity-90 font-semibold">
+                                🔍 ตรวจสอบสมาชิก
+                            </button>
+                        </div>
+                        
+                        <div class="mt-6 p-4 bg-green-50 rounded-lg">
+                            <h5 class="font-semibold text-green-800 mb-2">💡 รูปแบบรหัสสมาชิก</h5>
+                            <ul class="text-sm text-green-700 space-y-1">
+                                <li>• รหัส 2 ตัวอักษร + 4 กลุ่มเลข 4 หลัก</li>
+                                <li>• ตัวอย่าง: ED 1202 3033 403</li>
+                                <li>• หรือ AA 0001 2345 678</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
                 
-                <div id="coupon-verification-result" class="hidden mt-8">
+                <div id="verification-result" class="hidden mt-8">
                     <!-- Results will show here -->
                 </div>
             </div>
@@ -778,6 +807,37 @@
             { id: 5, name: 'ส่วนลด 15%', points: 1500, type: 'percent', value: 15, maxDiscount: 300, description: 'ส่วนลด 15% สูงสุด 300 บาท' }
         ];
 
+        // Utility Functions
+        function generateCouponCode() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = 'LEISMO';
+            for (let i = 0; i < 6; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        // Generate Member ID - รูปแบบ: XX 0000 0000 000
+        function generateMemberID() {
+            const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            const first = letters.charAt(Math.floor(Math.random() * letters.length));
+            const second = letters.charAt(Math.floor(Math.random() * letters.length));
+            
+            const num1 = Math.floor(1000 + Math.random() * 9000); // 1000-9999
+            const num2 = Math.floor(1000 + Math.random() * 9000); // 1000-9999
+            const num3 = Math.floor(100 + Math.random() * 900);   // 100-999
+            
+            return `${first}${second} ${num1} ${num2} ${num3}`;
+        }
+
+        function formatThaiDate(date) {
+            return date.toLocaleDateString('th-TH', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
         // Initialize Admin User
         async function initializeAdminUser() {
             try {
@@ -793,6 +853,8 @@
                         points: 99999,
                         tier: 'Platinum',
                         isAdmin: true,
+                        hasCard: true,
+                        memberID: 'AD 0000 0000 001',
                         coupons: [],
                         createdAt: new Date().toISOString()
                     };
@@ -803,24 +865,6 @@
             } catch (error) {
                 console.error('Error initializing admin:', error);
             }
-        }
-
-        // Utility Functions
-        function generateCouponCode() {
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-            let result = 'LEISMO';
-            for (let i = 0; i < 6; i++) {
-                result += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            return result;
-        }
-
-        function formatThaiDate(date) {
-            return date.toLocaleDateString('th-TH', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-            });
         }
 
         // Authentication Functions
@@ -928,7 +972,7 @@
                 const userCredential = await createUserWithEmailAndPassword(window.auth, email, password);
                 const user = userCredential.user;
 
-                // Create user document in Firestore
+                // Create user document in Firestore - ไม่ให้บัตรทันที
                 const userData = {
                     uid: user.uid,
                     name: name,
@@ -936,6 +980,8 @@
                     birthDate: birthDate,
                     points: 100,
                     tier: 'Bronze',
+                    hasCard: false, // ยังไม่มีบัตร
+                    memberID: null, // ยังไม่มีรหัสสมาชิก
                     coupons: [],
                     isAdmin: false,
                     createdAt: new Date().toISOString()
@@ -948,7 +994,7 @@
                 updateAuthUI();
                 hideError('register-error');
                 
-                alert('สมัครสมาชิกสำเร็จ! ยินดีต้อนรับสู่ Leismo\nได้รับแต้มต้อนรับ 100 แต้ม');
+                alert('สมัครสมาชิกสำเร็จ! ยินดีต้อนรับสู่ Leismo\n\nได้รับแต้มต้อนรับ 100 แต้ม\nไปที่หน้า Loyalty Card เพื่อรับบัตรสมาชิกของคุณ!');
                 showPage('home');
                 
             } catch (error) {
@@ -1015,6 +1061,54 @@
                 }
             }
         });
+
+        // Member Card Activation Function
+        window.activateMemberCard = async function() {
+            if (!window.currentUser || window.currentUser.hasCard) {
+                return;
+            }
+
+            try {
+                const { doc, updateDoc } = window.firebaseLibs;
+                
+                // Generate member ID
+                const memberID = generateMemberID();
+                
+                // Update user data
+                window.currentUser.hasCard = true;
+                window.currentUser.memberID = memberID;
+                
+                // Update in Firestore
+                const userRef = doc(window.db, 'users', window.currentUser.uid);
+                await updateDoc(userRef, {
+                    hasCard: true,
+                    memberID: memberID
+                });
+
+                // Hide activation section and show card with animation
+                document.getElementById('card-activation-section').classList.add('hidden');
+                document.getElementById('member-card-section').classList.remove('hidden');
+                document.getElementById('loyalty-tabs').classList.remove('hidden');
+                document.getElementById('tier-info-section').classList.remove('hidden');
+                document.getElementById('loyalty-dashboard').classList.remove('hidden');
+                
+                // Add slide-in animation
+                const memberCard = document.getElementById('member-card');
+                memberCard.classList.add('card-slide-in');
+                
+                setTimeout(() => {
+                    memberCard.classList.remove('card-slide-in');
+                }, 1200);
+
+                updateLoyaltyPage();
+                
+                alert(`🎉 ยินดีด้วย! ได้รับบัตรสมาชิกแล้ว\n\nรหัสสมาชิก: ${memberID}\nสามารถใช้รหัสนี้ตรวจสอบข้อมูลได้ที่แอดมิน`);
+
+            } catch (error) {
+                console.error('Error activating card:', error);
+                alert('เกิดข้อผิดพลาดในการรับบัตรสมาชิก กรุณาลองใหม่');
+            }
+        };
 
         // Navigation
         window.showPage = function(pageName) {
@@ -1257,8 +1351,28 @@
 
             // Update card with user data
             document.getElementById('loyalty-user-name').textContent = window.currentUser.name;
+
+            // Check if user has card
+            if (!window.currentUser.hasCard) {
+                // Show activation section
+                document.getElementById('card-activation-section').classList.remove('hidden');
+                document.getElementById('member-card-section').classList.add('hidden');
+                document.getElementById('loyalty-tabs').classList.add('hidden');
+                document.getElementById('tier-info-section').classList.add('hidden');
+                return;
+            }
+
+            // Show card section
+            document.getElementById('card-activation-section').classList.add('hidden');
+            document.getElementById('member-card-section').classList.remove('hidden');
+            document.getElementById('loyalty-tabs').classList.remove('hidden');
+            document.getElementById('tier-info-section').classList.remove('hidden');
+            document.getElementById('loyalty-dashboard').classList.remove('hidden');
+
+            // Update card data
             document.getElementById('card-member-name').textContent = window.currentUser.name;
             document.getElementById('card-member-email').textContent = window.currentUser.email;
+            document.getElementById('card-member-id').textContent = window.currentUser.memberID || 'XXXX XXXX XXX';
             document.getElementById('card-points').textContent = (window.currentUser.points || 0).toLocaleString();
             
             // Format member since date
@@ -1403,356 +1517,580 @@
             });
         }
 
-        // Forgot Password Functions
-        window.showForgotPasswordModal = function() {
-            document.getElementById('forgot-password-modal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-            
-            // Clear form
-            document.getElementById('forgot-email').value = '';
-            hideError('forgot-error');
-            hideError('forgot-success');
+        // Scanner Tab Functions
+        window.showScannerTab = function(tabName) {
+            const contents = document.querySelectorAll('.scanner-content');
+            contents.forEach(content => content.classList.add('hidden'));
+
+            document.getElementById(`scanner-${tabName}`).classList.remove('hidden');
+
+            const tabs = document.querySelectorAll('.scanner-tab');
+            tabs.forEach(tab => {
+                tab.style.color = '#6B7280';
+                tab.style.borderColor = 'transparent';
+                tab.classList.remove('border-b-2');
+            });
+
+            const activeTab = document.getElementById(`tab-${tabName}`);
+            activeTab.style.color = '#B19D87';
+            activeTab.style.borderColor = '#B19D87';
+            activeTab.classList.add('border-b-2');
         };
 
-        window.closeForgotPasswordModal = function() {
-            document.getElementById('forgot-password-modal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        };
-
-        // Close modal when clicking outside
-        document.getElementById('forgot-password-modal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeForgotPasswordModal();
-            }
-        });
-
-        window.handleForgotPassword = async function(event) {
-            event.preventDefault();
+        // Process Coupon Code
+        window.processCouponCode = async function() {
+            const codeInput = document.getElementById('coupon-code-input').value.trim().toUpperCase();
             
-            const email = document.getElementById('forgot-email').value.trim();
-            const submitBtn = document.getElementById('forgot-submit');
-            
-            if (!email) {
-                showError('forgot-error', 'กรุณาใส่อีเมล');
+            if (!codeInput) {
+                alert('กรุณากรอกรหัสคูปอง');
                 return;
             }
 
-            submitBtn.textContent = 'กำลังส่ง...';
-            submitBtn.disabled = true;
-            hideError('forgot-error');
-            hideError('forgot-success');
+            if (!codeInput.startsWith('LEISMO') || codeInput.length !== 12) {
+                alert('รูปแบบรหัสคูปองไม่ถูกต้อง\nต้องเริ่มต้นด้วย LEISMO และมี 12 ตัวอักษร');
+                return;
+            }
 
             try {
-                // Import sendPasswordResetEmail
-                const { sendPasswordResetEmail } = await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js');
+                const { collection, getDocs } = window.firebaseLibs;
+                const usersRef = collection(window.db, 'users');
+                const querySnapshot = await getDocs(usersRef);
                 
-                await sendPasswordResetEmail(window.auth, email);
-                
-                // Show success message
-                document.getElementById('forgot-success').textContent = `✅ ส่งลิงค์รีเซ็ตรหัสผ่านไปที่ ${email} แล้ว\nกรุณาตรวจสอบอีเมล (รวมถึงโฟลเดอร์ Spam)`;
-                document.getElementById('forgot-success').classList.remove('hidden');
-                
-                // Clear form
-                document.getElementById('forgot-email').value = '';
-                
-            } catch (error) {
-                console.error('Password reset error:', error);
-                let errorMessage = 'เกิดข้อผิดพลาดในการส่งอีเมลรีเซ็ต';
-                
-                if (error.code === 'auth/user-not-found') {
-                    errorMessage = 'ไม่พบบัญชีผู้ใช้ที่ใช้อีเมลนี้';
-                } else if (error.code === 'auth/invalid-email') {
-                    errorMessage = 'รูปแบบอีเมลไม่ถูกต้อง';
-                } else if (error.code === 'auth/too-many-requests') {
-                    errorMessage = 'ส่งคำขอมากเกินไป กรุณาลองใหม่ภายหลัง';
+                let couponFound = null;
+                let ownerData = null;
+
+                querySnapshot.forEach((doc) => {
+                    const userData = doc.data();
+                    const userCoupons = userData.coupons || [];
+                    const foundCoupon = userCoupons.find(c => c.code === codeInput);
+                    
+                    if (foundCoupon) {
+                        couponFound = foundCoupon;
+                        ownerData = userData;
+                    }
+                });
+
+                if (!couponFound) {
+                    showVerificationResult({
+                        type: 'coupon',
+                        status: 'invalid',
+                        data: {
+                            code: codeInput,
+                            name: 'ไม่พบคูปอง',
+                            type: 'unknown',
+                            value: 0,
+                            createdDate: '-',
+                            expiryDate: '-'
+                        },
+                        owner: {
+                            name: 'ไม่พบข้อมูล',
+                            email: '-',
+                            tier: '-',
+                            points: 0
+                        }
+                    });
+                    return;
                 }
+
+                // Check if expired
+                const isExpired = new Date() > new Date(couponFound.expiryTimestamp);
                 
-                showError('forgot-error', errorMessage);
-            } finally {
-                submitBtn.textContent = '📨 ส่งลิงค์รีเซ็ต';
-                submitBtn.disabled = false;
+                // Determine status
+                let status = 'valid';
+                if (couponFound.used) {
+                    status = 'used';
+                } else if (isExpired) {
+                    status = 'expired';
+                }
+
+                showVerificationResult({
+                    type: 'coupon',
+                    status: status,
+                    data: {
+                        code: couponFound.code,
+                        name: couponFound.name,
+                        type: couponFound.type,
+                        value: couponFound.value,
+                        createdDate: couponFound.createdDate,
+                        expiryDate: couponFound.expiryDate,
+                        usedDate: couponFound.usedDate || null
+                    },
+                    owner: {
+                        name: ownerData.name,
+                        email: ownerData.email,
+                        tier: ownerData.tier,
+                        points: ownerData.points,
+                        memberID: ownerData.memberID
+                    }
+                });
+
+            } catch (error) {
+                console.error('Code processing error:', error);
+                alert('เกิดข้อผิดพลาดในการตรวจสอบคูปอง');
             }
         };
 
-        // User Details Functions
-        let currentSelectedUser = null;
+        // Process Member Card
+        window.processMemberCard = async function() {
+            const memberInput = document.getElementById('member-id-input').value.trim().toUpperCase();
+            
+            if (!memberInput) {
+                alert('กรุณากรอกรหัสสมาชิก');
+                return;
+            }
 
-        window.showUserDetails = function(user) {
-            // รองรับทั้งการส่ง object และ string
-            if (typeof user === 'string') {
-                try {
-                    user = JSON.parse(user);
-                } catch (e) {
-                    console.error('Error parsing user data:', e);
-                    alert('เกิดข้อผิดพลาดในการโหลดข้อมูลผู้ใช้');
+            // Validate format: XX 0000 0000 000
+            const memberPattern = /^[A-Z]{2}\s\d{4}\s\d{4}\s\d{3}$/;
+            if (!memberPattern.test(memberInput)) {
+                alert('รูปแบบรหัสสมาชิกไม่ถูกต้อง\nต้องเป็น: XX 0000 0000 000\nเช่น: ED 1202 3033 403');
+                return;
+            }
+
+            try {
+                const { collection, getDocs } = window.firebaseLibs;
+                const usersRef = collection(window.db, 'users');
+                const querySnapshot = await getDocs(usersRef);
+                
+                let memberFound = null;
+
+                querySnapshot.forEach((doc) => {
+                    const userData = doc.data();
+                    if (userData.memberID === memberInput) {
+                        memberFound = userData;
+                    }
+                });
+
+                if (!memberFound) {
+                    showVerificationResult({
+                        type: 'member',
+                        status: 'invalid',
+                        data: {
+                            memberID: memberInput,
+                            name: 'ไม่พบสมาชิก',
+                            email: '-',
+                            tier: '-',
+                            points: 0,
+                            createdAt: '-'
+                        },
+                        owner: null
+                    });
                     return;
                 }
+
+                // Calculate member stats
+                const coupons = memberFound.coupons || [];
+                const activeCoupons = coupons.filter(c => !c.used && new Date() <= new Date(c.expiryTimestamp));
+                const usedCoupons = coupons.filter(c => c.used);
+                const expiredCoupons = coupons.filter(c => !c.used && new Date() > new Date(c.expiryTimestamp));
+
+                showVerificationResult({
+                    type: 'member',
+                    status: 'valid',
+                    data: {
+                        memberID: memberFound.memberID,
+                        name: memberFound.name,
+                        email: memberFound.email,
+                        tier: memberFound.tier,
+                        points: memberFound.points,
+                        createdAt: memberFound.createdAt,
+                        birthDate: memberFound.birthDate,
+                        totalCoupons: coupons.length,
+                        activeCoupons: activeCoupons.length,
+                        usedCoupons: usedCoupons.length,
+                        expiredCoupons: expiredCoupons.length,
+                        coupons: coupons
+                    },
+                    owner: null
+                });
+
+            } catch (error) {
+                console.error('Member processing error:', error);
+                alert('เกิดข้อผิดพลาดในการตรวจสอบสมาชิก');
             }
+        };
+
+        function showVerificationResult(result) {
+            const container = document.getElementById('verification-result');
+            container.classList.remove('hidden');
+
+            if (result.type === 'coupon') {
+                showCouponResult(result);
+            } else if (result.type === 'member') {
+                showMemberResult(result);
+            }
+        }
+
+        function showCouponResult(result) {
+            const container = document.getElementById('verification-result');
             
-            currentSelectedUser = user;
-            console.log('Showing user details for:', user.name);
+            let statusColor, statusIcon, statusText;
             
-            // Fill personal info
-            document.getElementById('user-detail-name').textContent = user.name || '-';
-            document.getElementById('user-detail-email').textContent = user.email || '-';
-            document.getElementById('user-detail-birthdate').textContent = user.birthDate ? new Date(user.birthDate).toLocaleDateString('th-TH', {
+            switch (result.status) {
+                case 'valid':
+                    statusColor = 'bg-green-50 border-green-200';
+                    statusIcon = '✅';
+                    statusText = 'คูปองใช้ได้';
+                    break;
+                case 'used':
+                    statusColor = 'bg-red-50 border-red-200';
+                    statusIcon = '❌';
+                    statusText = 'คูปองใช้แล้ว';
+                    break;
+                case 'expired':
+                    statusColor = 'bg-orange-50 border-orange-200';
+                    statusIcon = '⏰';
+                    statusText = 'คูปองหมดอายุ';
+                    break;
+                case 'invalid':
+                    statusColor = 'bg-red-50 border-red-200';
+                    statusIcon = '🚫';
+                    statusText = 'คูปองไม่ถูกต้อง';
+                    break;
+            }
+
+            const coupon = result.data;
+            const owner = result.owner;
+            const canUse = result.status === 'valid';
+
+            container.innerHTML = `
+                <div class="border-2 rounded-lg p-6 ${statusColor}">
+                    <div class="text-center mb-6">
+                        <div class="text-4xl mb-2">${statusIcon}</div>
+                        <h3 class="text-xl font-semibold">${statusText}</h3>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="space-y-3">
+                            <h4 class="font-semibold text-gray-800">ข้อมูลคูปอง</h4>
+                            <div class="space-y-2 text-sm">
+                                <p><strong>รหัส:</strong> ${coupon.code}</p>
+                                <p><strong>ชื่อ:</strong> ${coupon.name}</p>
+                                <p><strong>มูลค่า:</strong> ${coupon.type === 'coupon' ? `฿${coupon.value}` : coupon.type === 'percent' ? `${coupon.value}%` : '-'}</p>
+                                <p><strong>ได้รับ:</strong> ${coupon.createdDate}</p>
+                                <p><strong>หมดอายุ:</strong> ${coupon.expiryDate}</p>
+                                ${coupon.usedDate ? `<p><strong>ใช้เมื่อ:</strong> ${coupon.usedDate}</p>` : ''}
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <h4 class="font-semibold text-gray-800">ข้อมูลลูกค้า</h4>
+                            <div class="space-y-2 text-sm">
+                                <p><strong>ชื่อ:</strong> ${owner.name}</p>
+                                <p><strong>อีเมล:</strong> ${owner.email}</p>
+                                <p><strong>รหัสสมาชิก:</strong> ${owner.memberID || '-'}</p>
+                                <p><strong>ระดับ:</strong> ${owner.tier}</p>
+                                <p><strong>แต้มปัจจุบัน:</strong> ${owner.points?.toLocaleString() || '0'} แต้ม</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${canUse ? `
+                        <div class="mt-6 text-center">
+                            <button onclick="useCoupon('${coupon.code}')" class="bg-green-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-600">
+                                ✅ ยืนยันการใช้คูปอง
+                            </button>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function showMemberResult(result) {
+            const container = document.getElementById('verification-result');
+            
+            if (result.status === 'invalid') {
+                container.innerHTML = `
+                    <div class="border-2 rounded-lg p-6 bg-red-50 border-red-200">
+                        <div class="text-center mb-6">
+                            <div class="text-4xl mb-2">🚫</div>
+                            <h3 class="text-xl font-semibold">ไม่พบสมาชิก</h3>
+                            <p class="text-gray-600 mt-2">รหัสสมาชิก: ${result.data.memberID}</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            const member = result.data;
+            const memberSince = new Date(member.createdAt).toLocaleDateString('th-TH', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            const birthDate = member.birthDate ? new Date(member.birthDate).toLocaleDateString('th-TH', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
             }) : '-';
-            document.getElementById('user-detail-uid').textContent = user.uid || '-';
-            document.getElementById('user-detail-created').textContent = user.createdAt ? new Date(user.createdAt).toLocaleDateString('th-TH', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            }) : '-';
-            document.getElementById('user-detail-tier').textContent = user.tier || 'Bronze';
-            
-            // Fill points
-            document.getElementById('user-detail-points').textContent = (user.points || 0).toLocaleString();
-            
-            // Fill coupons
-            const userCoupons = user.coupons || [];
-            document.getElementById('user-detail-coupon-count').textContent = userCoupons.length;
-            
-            const couponsContainer = document.getElementById('user-detail-coupons');
-            
-            if (userCoupons.length === 0) {
-                couponsContainer.innerHTML = `
-                    <div class="text-center py-8 text-gray-500">
-                        <div class="text-4xl mb-2">📭</div>
-                        <p>ยังไม่มีคูปอง</p>
+
+            container.innerHTML = `
+                <div class="border-2 rounded-lg p-6 bg-green-50 border-green-200">
+                    <div class="text-center mb-6">
+                        <div class="text-4xl mb-2">✅</div>
+                        <h3 class="text-xl font-semibold">ข้อมูลสมาชิก</h3>
+                        <p class="text-lg font-mono font-bold brand-color mt-2">${member.memberID}</p>
                     </div>
-                `;
-            } else {
-                couponsContainer.innerHTML = '<div class="space-y-4"></div>';
-                const couponsGrid = couponsContainer.querySelector('.space-y-4');
-                
-                userCoupons.forEach((coupon, index) => {
-                    const isExpired = new Date() > new Date(coupon.expiryTimestamp || coupon.expiryDate);
-                    const statusIcon = coupon.used ? '✅ ใช้แล้ว' : isExpired ? '⏰ หมดอายุ' : '🎫 ใช้ได้';
-                    const statusColor = coupon.used ? 'bg-gray-100 text-gray-600' : 
-                                       isExpired ? 'bg-red-100 text-red-600' : 
-                                       'bg-green-100 text-green-600';
-                    
-                    const couponDiv = document.createElement('div');
-                    couponDiv.className = 'border rounded-lg p-4 hover:bg-gray-50';
-                    couponDiv.innerHTML = `
-                        <div class="flex justify-between items-start">
-                            <div class="flex-1">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <span class="font-semibold text-lg">#${index + 1}</span>
-                                    <span class="font-mono text-sm bg-gray-200 px-2 py-1 rounded">${coupon.code}</span>
-                                </div>
-                                <h4 class="font-semibold brand-color">${coupon.name}</h4>
-                                <p class="text-sm text-gray-600 mb-2">${coupon.description || '-'}</p>
-                                <div class="text-xs text-gray-500 space-y-1">
-                                    <p>💰 มูลค่า: ${coupon.type === 'coupon' ? `฿${coupon.value}` : `${coupon.value}%`}</p>
-                                    <p>📅 ได้รับ: ${coupon.createdDate}</p>
-                                    <p>⏰ หมดอายุ: ${coupon.expiryDate}</p>
-                                    ${coupon.used ? `<p>✅ ใช้เมื่อ: ${coupon.usedDate || 'ไม่ระบุ'}</p>` : ''}
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <div class="text-2xl font-bold brand-color mb-2">
-                                    ${coupon.type === 'coupon' ? `฿${coupon.value}` : `${coupon.value}%`}
-                                </div>
-                                <div class="text-center py-1 px-3 rounded-full text-xs font-semibold ${statusColor}">
-                                    ${statusIcon}
-                                </div>
+
+                    <div class="grid md:grid-cols-2 gap-6 mb-6">
+                        <div class="space-y-3">
+                            <h4 class="font-semibold text-gray-800">ข้อมูลส่วนตัว</h4>
+                            <div class="space-y-2 text-sm">
+                                <p><strong>ชื่อ-นามสกุล:</strong> ${member.name}</p>
+                                <p><strong>อีเมล:</strong> ${member.email}</p>
+                                <p><strong>วันเกิด:</strong> ${birthDate}</p>
+                                <p><strong>สมาชิกตั้งแต่:</strong> ${memberSince}</p>
                             </div>
                         </div>
-                    `;
-                    couponsGrid.appendChild(couponDiv);
-                });
-            }
-            
-            // Show modal
-            document.body.style.overflow = 'hidden';
-            document.getElementById('user-details-modal').classList.remove('hidden');
-        };
 
-        window.closeUserDetailsModal = function() {
-            document.getElementById('user-details-modal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
-            currentSelectedUser = null;
-        };
+                        <div class="space-y-3">
+                            <h4 class="font-semibold text-gray-800">สถานะสมาชิก</h4>
+                            <div class="space-y-2 text-sm">
+                                <p><strong>ระดับสมาชิก:</strong> <span class="font-semibold brand-color">${member.tier}</span></p>
+                                <p><strong>แต้มสะสม:</strong> <span class="font-semibold text-green-600">${member.points?.toLocaleString() || '0'} แต้ม</span></p>
+                                <p><strong>คูปองทั้งหมด:</strong> ${member.totalCoupons} ใบ</p>
+                                <p><strong>คูปองใช้ได้:</strong> <span class="font-semibold text-green-600">${member.activeCoupons} ใบ</span></p>
+                            </div>
+                        </div>
+                    </div>
 
-        // Close modal when clicking outside
-        document.getElementById('user-details-modal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeUserDetailsModal();
-            }
-        });
+                    <div class="grid grid-cols-3 gap-4 mb-6">
+                        <div class="text-center p-4 bg-white rounded-lg border">
+                            <div class="text-2xl font-bold text-green-600">${member.activeCoupons}</div>
+                            <div class="text-sm text-gray-600">คูปองใช้ได้</div>
+                        </div>
+                        <div class="text-center p-4 bg-white rounded-lg border">
+                            <div class="text-2xl font-bold text-blue-600">${member.usedCoupons}</div>
+                            <div class="text-sm text-gray-600">คูปองใช้แล้ว</div>
+                        </div>
+                        <div class="text-center p-4 bg-white rounded-lg border">
+                            <div class="text-2xl font-bold text-orange-600">${member.expiredCoupons}</div>
+                            <div class="text-sm text-gray-600">คูปองหมดอายุ</div>
+                        </div>
+                    </div>
 
-        window.editUserPoints = function() {
-            if (!currentSelectedUser) return;
-            
-            const currentPoints = currentSelectedUser.points || 0;
-            const newPoints = prompt(`แก้ไขแต้มของ ${currentSelectedUser.name}\n\nแต้มปัจจุบัน: ${currentPoints.toLocaleString()}\nใส่แต้มใหม่:`, currentPoints);
-            
-            if (newPoints === null) return; // ยกเลิก
-            
-            const pointsNumber = parseInt(newPoints);
-            if (isNaN(pointsNumber) || pointsNumber < 0) {
-                alert('กรุณาใส่จำนวนแต้มที่ถูกต้อง (ตัวเลขที่มากกว่าหรือเท่ากับ 0)');
-                return;
-            }
-            
-            updateUserPoints(currentSelectedUser.uid, pointsNumber);
-        };
+                    ${member.coupons && member.coupons.length > 0 ? `
+                        <div class="mb-6">
+                            <h4 class="font-semibold text-gray-800 mb-3">ประวัติคูปอง</h4>
+                            <div class="max-h-60 overflow-y-auto space-y-2">
+                                ${member.coupons.map((coupon, index) => {
+                                    const isExpired = new Date() > new Date(coupon.expiryTimestamp);
+                                    const statusIcon = coupon.used ? '✅' : isExpired ? '⏰' : '🎫';
+                                    const statusText = coupon.used ? 'ใช้แล้ว' : isExpired ? 'หมดอายุ' : 'ใช้ได้';
+                                    const statusColor = coupon.used ? 'bg-gray-100' : isExpired ? 'bg-red-100' : 'bg-green-100';
+                                    
+                                    return `
+                                        <div class="flex items-center justify-between p-3 border rounded ${statusColor}">
+                                            <div class="flex-1">
+                                                <div class="font-semibold text-sm">${coupon.name}</div>
+                                                <div class="text-xs text-gray-600">${coupon.code} | ${coupon.createdDate}</div>
+                                            </div>
+                                            <div class="text-right">
+                                                <div class="font-bold brand-color">${coupon.type === 'coupon' ? `฿${coupon.value}` : `${coupon.value}%`}</div>
+                                                <div class="text-xs">${statusIcon} ${statusText}</div>
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
 
-        window.resetUserPassword = async function() {
-            if (!currentSelectedUser) return;
-            
-            const confirmed = confirm(`ยืนยันการรีเซ็ตรหัสผ่านของ ${currentSelectedUser.name}?\n\nระบบจะส่งลิงค์รีเซ็ตไปที่ ${currentSelectedUser.email}`);
-            
-            if (!confirmed) return;
-            
-            try {
-                // Import sendPasswordResetEmail
-                const { sendPasswordResetEmail } = await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js');
-                
-                await sendPasswordResetEmail(window.auth, currentSelectedUser.email);
-                
-                alert(`✅ ส่งลิงค์รีเซ็ตรหัสผ่านสำเร็จ!\n\nส่งไปที่: ${currentSelectedUser.email}\nกรุณาแจ้งลูกค้าให้ตรวจสอบอีเมล (รวมถึงโฟลเดอร์ Spam)`);
-                
-            } catch (error) {
-                console.error('Admin password reset error:', error);
-                let errorMessage = 'เกิดข้อผิดพลาดในการส่งอีเมลรีเซ็ต';
-                
-                if (error.code === 'auth/user-not-found') {
-                    errorMessage = 'ไม่พบบัญชีผู้ใช้ที่ใช้อีเมลนี้';
-                } else if (error.code === 'auth/too-many-requests') {
-                    errorMessage = 'ส่งคำขอมากเกินไป กรุณาลองใหม่ภายหลัง';
-                }
-                
-                alert(`❌ เกิดข้อผิดพลาด\n${errorMessage}`);
-            }
-        };
-
-        async function updateUserPoints(userId, newPoints) {
-            try {
-                const { doc, updateDoc } = window.firebaseLibs;
-                const userRef = doc(window.db, 'users', userId);
-                
-                await updateDoc(userRef, {
-                    points: newPoints
-                });
-                
-                // Update current user data if it's the same user
-                if (currentSelectedUser) {
-                    currentSelectedUser.points = newPoints;
-                    document.getElementById('user-detail-points').textContent = newPoints.toLocaleString();
-                }
-                
-                alert(`✅ แก้ไขแต้มสำเร็จ!\nแต้มใหม่: ${newPoints.toLocaleString()} แต้ม`);
-                
-                // Refresh admin data
-                loadAdminData();
-                
-            } catch (error) {
-                console.error('Error updating points:', error);
-                alert('เกิดข้อผิดพลาดในการแก้ไขแต้ม');
-            }
+                    <div class="text-center">
+                        <button onclick="showFullMemberDetails('${member.memberID}')" class="bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-600 mr-3">
+                            👀 ดูรายละเอียดเต็ม
+                        </button>
+                        <button onclick="addPointsToMember('${member.memberID}')" class="bg-yellow-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-yellow-600">
+                            ⭐ เพิ่มแต้ม
+                        </button>
+                    </div>
+                </div>
+            `;
         }
 
-        // Admin Functions
-        async function loadAdminData() {
-            if (!window.currentUser?.isAdmin) return;
-
+        // Additional functions for member management
+        window.showFullMemberDetails = async function(memberID) {
             try {
                 const { collection, getDocs } = window.firebaseLibs;
-                const usersCollection = collection(window.db, 'users');
-                const querySnapshot = await getDocs(usersCollection);
+                const usersRef = collection(window.db, 'users');
+                const querySnapshot = await getDocs(usersRef);
                 
-                let totalUsers = 0;
-                let totalPoints = 0;
-                let totalCoupons = 0;
-                let totalValue = 0;
-                const usersList = [];
-
+                let memberFound = null;
                 querySnapshot.forEach((doc) => {
                     const userData = doc.data();
-                    if (!userData.isAdmin) {
-                        totalUsers++;
-                        totalPoints += userData.points || 0;
-                        
-                        const userCoupons = userData.coupons || [];
-                        totalCoupons += userCoupons.length;
-                        
-                        userCoupons.forEach(coupon => {
-                            if (coupon.type === 'coupon') {
-                                totalValue += coupon.value;
-                            }
-                        });
-                        
-                        usersList.push(userData);
+                    if (userData.memberID === memberID) {
+                        memberFound = userData;
                     }
                 });
 
-                // Update admin stats
-                document.getElementById('admin-total-users').textContent = totalUsers;
-                document.getElementById('admin-total-points').textContent = totalPoints.toLocaleString();
-                document.getElementById('admin-total-coupons').textContent = totalCoupons;
-                document.getElementById('admin-total-value').textContent = totalValue.toLocaleString() + '฿';
-
-                // Load users list
-                const usersListContainer = document.getElementById('admin-users-list');
-                usersListContainer.innerHTML = '';
-
-                if (usersList.length === 0) {
-                    usersListContainer.innerHTML = '<p class="text-gray-500 text-center">ยังไม่มีสมาชิก</p>';
-                    return;
+                if (memberFound) {
+                    showUserDetails(memberFound);
                 }
+            } catch (error) {
+                console.error('Error loading member details:', error);
+                alert('เกิดข้อผิดพลาดในการโหลดข้อมูล');
+            }
+        };
 
-                usersList.forEach(user => {
-                    const userDiv = document.createElement('div');
-                    userDiv.className = 'border rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors';
-                    userDiv.style.borderColor = '#DACFBD';
-                    
-                    // เพิ่ม event listener แบบชัดเจน
-                    userDiv.addEventListener('dblclick', function() {
-                        console.log('Double clicked user:', user.name);
-                        showUserDetails(user);
-                    });
-                    
-                    userDiv.innerHTML = `
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <h4 class="font-semibold">${user.name}</h4>
-                                <p class="text-sm text-gray-600">${user.email}</p>
-                                <p class="text-xs text-gray-500">สมัครเมื่อ: ${new Date(user.createdAt).toLocaleDateString('th-TH')}</p>
-                            </div>
-                            <div class="text-right">
-                                <p class="font-semibold brand-color">${user.tier}</p>
-                                <p class="text-sm">${(user.points || 0).toLocaleString()} แต้ม</p>
-                                <p class="text-xs text-gray-500">${(user.coupons || []).length} คูปอง</p>
-                            </div>
-                        </div>
-                        <div class="mt-2 text-xs text-blue-600 font-medium">
-                            💡 ดับเบิลคลิกเพื่อดูรายละเอียด หรือคลิกปุ่มด้านล่าง
-                        </div>
-                        <div class="mt-3">
-                            <button onclick="showUserDetails(${JSON.stringify(user).replace(/"/g, '&quot;')})" class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg text-sm hover:bg-blue-600 transition-colors">
-                                👀 ดูรายละเอียด
-                            </button>
-                        </div>
-                    `;
-                    usersListContainer.appendChild(userDiv);
+        window.addPointsToMember = async function(memberID) {
+            const points = prompt('เพิ่มแต้มให้สมาชิก\nใส่จำนวนแต้มที่ต้องการเพิ่ม:');
+            
+            if (points === null) return;
+            
+            const pointsNumber = parseInt(points);
+            if (isNaN(pointsNumber) || pointsNumber <= 0) {
+                alert('กรุณาใส่จำนวนแต้มที่ถูกต้อง (ตัวเลขที่มากกว่า 0)');
+                return;
+            }
+
+            try {
+                const { collection, getDocs, doc, updateDoc } = window.firebaseLibs;
+                const usersRef = collection(window.db, 'users');
+                const querySnapshot = await getDocs(usersRef);
+                
+                let memberFound = null;
+                let memberId = null;
+                
+                querySnapshot.forEach((docSnapshot) => {
+                    const userData = docSnapshot.data();
+                    if (userData.memberID === memberID) {
+                        memberFound = userData;
+                        memberId = docSnapshot.id;
+                    }
                 });
 
+                if (memberFound && memberId) {
+                    const newPoints = (memberFound.points || 0) + pointsNumber;
+                    
+                    const userRef = doc(window.db, 'users', memberId);
+                    await updateDoc(userRef, {
+                        points: newPoints
+                    });
+                    
+                    alert(`✅ เพิ่มแต้มสำเร็จ!\n\nสมาชิก: ${memberFound.name}\nแต้มเดิม: ${(memberFound.points || 0).toLocaleString()}\nเพิ่ม: +${pointsNumber.toLocaleString()}\nแต้มใหม่: ${newPoints.toLocaleString()}`);
+                    
+                    // Refresh the result
+                    processMemberCard();
+                } else {
+                    alert('ไม่พบข้อมูลสมาชิก');
+                }
+
             } catch (error) {
-                console.error('Error loading admin data:', error);
+                console.error('Error adding points:', error);
+                alert('เกิดข้อผิดพลาดในการเพิ่มแต้ม');
             }
-        }
+        };
+
+        window.useCoupon = async function(couponCode) {
+            if (!confirm(`ยืนยันการใช้คูปอง ${couponCode}?`)) {
+                return;
+            }
+
+            try {
+                const { collection, getDocs, doc, updateDoc } = window.firebaseLibs;
+                const usersRef = collection(window.db, 'users');
+                const querySnapshot = await getDocs(usersRef);
+                
+                let foundUser = null;
+                let couponIndex = -1;
+
+                querySnapshot.forEach((docSnapshot) => {
+                    const userData = docSnapshot.data();
+                    const userCoupons = userData.coupons || [];
+                    const index = userCoupons.findIndex(c => c.code === couponCode);
+                    
+                    if (index !== -1) {
+                        foundUser = { id: docSnapshot.id, data: userData };
+                        couponIndex = index;
+                    }
+                });
+
+                if (foundUser && couponIndex !== -1) {
+                    // Mark coupon as used
+                    foundUser.data.coupons[couponIndex].used = true;
+                    foundUser.data.coupons[couponIndex].usedDate = formatThaiDate(new Date());
+                    foundUser.data.coupons[couponIndex].usedTimestamp = new Date().toISOString();
+
+                    // Update in Firestore
+                    const userRef = doc(window.db, 'users', foundUser.id);
+                    await updateDoc(userRef, {
+                        coupons: foundUser.data.coupons
+                    });
+
+                    alert('✅ ยืนยันการใช้คูปองสำเร็จ!');
+                    
+                    // Refresh the verification result
+                    document.getElementById('coupon-code-input').value = '';
+                    document.getElementById('verification-result').classList.add('hidden');
+                } else {
+                    alert('ไม่พบคูปองที่ระบุ');
+                }
+
+            } catch (error) {
+                console.error('Error using coupon:', error);
+                alert('เกิดข้อผิดพลาดในการใช้คูปอง');
+            }
+        };
+
+        // Auto-format inputs
+        document.addEventListener('DOMContentLoaded', function() {
+            const codeInput = document.getElementById('coupon-code-input');
+            if (codeInput) {
+                codeInput.addEventListener('input', function(e) {
+                    let value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                    if (value.length > 12) {
+                        value = value.substring(0, 12);
+                    }
+                    e.target.value = value;
+                });
+
+                codeInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        processCouponCode();
+                    }
+                });
+            }
+
+            const memberInput = document.getElementById('member-id-input');
+            if (memberInput) {
+                memberInput.addEventListener('input', function(e) {
+                    let value = e.target.value.toUpperCase().replace(/[^A-Z0-9\s]/g, '');
+                    
+                    // Format: XX 0000 0000 000
+                    value = value.replace(/\s/g, ''); // Remove existing spaces
+                    if (value.length >= 2) {
+                        value = value.substring(0, 2) + ' ' + value.substring(2);
+                    }
+                    if (value.length >= 7) {
+                        value = value.substring(0, 7) + ' ' + value.substring(7);
+                    }
+                    if (value.length >= 12) {
+                        value = value.substring(0, 12) + ' ' + value.substring(12);
+                    }
+                    if (value.length > 15) {
+                        value = value.substring(0, 15);
+                    }
+                    
+                    e.target.value = value;
+                });
+
+                memberInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        processMemberCard();
+                    }
+                });
+            }
+        });
 
         // Coupon Functions
         window.redeemReward = async function(rewardId) {
             if (!window.currentUser) {
                 alert('กรุณาเข้าสู่ระบบก่อน');
+                return;
+            }
+
+            if (!window.currentUser.hasCard) {
+                alert('กรุณารับบัตรสมาชิกก่อนแลกของรางวัล');
                 return;
             }
 
@@ -1829,69 +2167,7 @@
                 valueDisplay.textContent = `${coupon.value}%`;
             }
 
-            setTimeout(() => {
-                generateQRCode(coupon);
-            }, 100);
-
             document.getElementById('coupon-modal').classList.remove('hidden');
-        }
-
-        function generateQRCode(coupon) {
-            const canvas = document.getElementById('qr-code');
-            if (!canvas) return;
-            
-            // สร้าง URL ที่ลิงค์ไปหน้าตรวจสอบคูปองโดยตรง
-            const verificationUrl = `${window.location.origin}${window.location.pathname}#verify-${coupon.code}`;
-            
-            if (typeof QRCode !== 'undefined') {
-                // ล้าง canvas เก่า
-                const ctx = canvas.getContext('2d');
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                
-                QRCode.toCanvas(canvas, verificationUrl, {
-                    width: 200,
-                    height: 200,
-                    color: {
-                        dark: '#B19D87',
-                        light: '#FFFFFF'
-                    },
-                    errorCorrectionLevel: 'M',
-                    margin: 2
-                }, function(error) {
-                    if (error) {
-                        console.error('QR Code error:', error);
-                        // Fallback: แสดงข้อความแทน
-                        showFallbackQR(canvas, coupon.code);
-                    }
-                });
-            } else {
-                showFallbackQR(canvas, coupon.code);
-            }
-        }
-
-        function showFallbackQR(canvas, code) {
-            canvas.width = 200;
-            canvas.height = 200;
-            const ctx = canvas.getContext('2d');
-            
-            // Background
-            ctx.fillStyle = '#f0f0f0';
-            ctx.fillRect(0, 0, 200, 200);
-            
-            // Border
-            ctx.strokeStyle = '#B19D87';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(10, 10, 180, 180);
-            
-            // Text
-            ctx.fillStyle = '#666';
-            ctx.font = 'bold 14px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('QR Code', 100, 80);
-            ctx.font = '12px monospace';
-            ctx.fillText(code, 100, 100);
-            ctx.font = '10px Arial';
-            ctx.fillText('สำหรับแอดมิน', 100, 130);
         }
 
         window.closeCouponModal = function() {
@@ -1900,16 +2176,13 @@
         };
 
         window.openLineChat = function() {
-            // เปิด Line Chat โดยตรง
             window.open('https://lin.ee/EVNhIRq', '_blank');
         };
 
-        // Copy coupon code function
         window.copyCouponCode = function() {
-            const codeElement = document.getElementById('coupon-display-code-large');
+            const codeElement = document.getElementById('coupon-display-code');
             const code = codeElement.textContent;
             
-            // Try to copy to clipboard
             if (navigator.clipboard) {
                 navigator.clipboard.writeText(code).then(() => {
                     showCopySuccess();
@@ -1922,7 +2195,6 @@
         };
 
         function fallbackCopy(text) {
-            // Fallback method for older browsers
             const textArea = document.createElement('textarea');
             textArea.value = text;
             document.body.appendChild(textArea);
@@ -1938,14 +2210,12 @@
         }
 
         function showCopySuccess() {
-            const codeElement = document.getElementById('coupon-display-code-large');
+            const codeElement = document.getElementById('coupon-display-code');
             const originalText = codeElement.textContent;
             
-            // Show success message
             codeElement.textContent = '✅ คัดลอกแล้ว!';
             codeElement.style.color = '#10B981';
             
-            // Reset after 2 seconds
             setTimeout(() => {
                 codeElement.textContent = originalText;
                 codeElement.style.color = '#B19D87';
@@ -1953,376 +2223,360 @@
         }
 
         window.downloadCoupon = function() {
-            // Create a temporary canvas to capture the coupon
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             canvas.width = 400;
             canvas.height = 600;
 
-            // Draw coupon background
             const gradient = ctx.createLinearGradient(0, 0, 400, 600);
             gradient.addColorStop(0, '#B19D87');
             gradient.addColorStop(1, '#DACFBD');
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, 400, 600);
 
-            // Add text
             ctx.fillStyle = 'white';
             ctx.font = 'bold 24px Arial';
             ctx.textAlign = 'center';
             ctx.fillText('Leismo Coupon', 200, 50);
 
-            // Create download link
             const link = document.createElement('a');
             link.download = `leismo-coupon-${window.currentCoupon?.code || 'download'}.png`;
             link.href = canvas.toDataURL();
             link.click();
         };
 
-        // Scanner Tab Functions
-        window.showScannerTab = function(tabName) {
-            const contents = document.querySelectorAll('.scanner-content');
-            contents.forEach(content => content.classList.add('hidden'));
-
-            document.getElementById(`scanner-${tabName}`).classList.remove('hidden');
-
-            const tabs = document.querySelectorAll('.scanner-tab');
-            tabs.forEach(tab => {
-                tab.style.color = '#6B7280';
-                tab.style.borderColor = 'transparent';
-                tab.classList.remove('border-b-2');
-            });
-
-            const activeTab = document.getElementById(`tab-${tabName}`);
-            activeTab.style.color = '#B19D87';
-            activeTab.style.borderColor = '#B19D87';
-            activeTab.classList.add('border-b-2');
-        };
-
-        // Process Coupon Code (ฟังก์ชันใหม่)
-        window.processCouponCode = async function() {
-            const codeInput = document.getElementById('coupon-code-input').value.trim().toUpperCase();
-            
-            if (!codeInput) {
-                alert('กรุณากรอกรหัสคูปอง');
-                return;
-            }
-
-            if (!codeInput.startsWith('LEISMO') || codeInput.length !== 12) {
-                alert('รูปแบบรหัสคูปองไม่ถูกต้อง\nต้องเริ่มต้นด้วย LEISMO และมี 12 ตัวอักษร');
-                return;
-            }
+        // Admin Functions
+        async function loadAdminData() {
+            if (!window.currentUser?.isAdmin) return;
 
             try {
                 const { collection, getDocs } = window.firebaseLibs;
-                const usersRef = collection(window.db, 'users');
-                const querySnapshot = await getDocs(usersRef);
+                const usersCollection = collection(window.db, 'users');
+                const querySnapshot = await getDocs(usersCollection);
                 
-                let couponFound = null;
-                let ownerData = null;
+                let totalUsers = 0;
+                let totalPoints = 0;
+                let totalCoupons = 0;
+                let totalValue = 0;
+                const usersList = [];
 
                 querySnapshot.forEach((doc) => {
                     const userData = doc.data();
-                    const userCoupons = userData.coupons || [];
-                    const foundCoupon = userCoupons.find(c => c.code === codeInput);
-                    
-                    if (foundCoupon) {
-                        couponFound = foundCoupon;
-                        ownerData = userData;
+                    if (!userData.isAdmin) {
+                        totalUsers++;
+                        totalPoints += userData.points || 0;
+                        
+                        const userCoupons = userData.coupons || [];
+                        totalCoupons += userCoupons.length;
+                        
+                        userCoupons.forEach(coupon => {
+                            if (coupon.type === 'coupon') {
+                                totalValue += coupon.value;
+                            }
+                        });
+                        
+                        usersList.push(userData);
                     }
                 });
 
-                if (!couponFound) {
-                    showVerificationResult({
-                        status: 'invalid',
-                        coupon: {
-                            code: codeInput,
-                            name: 'ไม่พบคูปอง',
-                            type: 'unknown',
-                            value: 0,
-                            createdDate: '-',
-                            expiryDate: '-'
-                        },
-                        owner: {
-                            name: 'ไม่พบข้อมูล',
-                            email: '-',
-                            tier: '-',
-                            points: 0
-                        }
-                    });
+                document.getElementById('admin-total-users').textContent = totalUsers;
+                document.getElementById('admin-total-points').textContent = totalPoints.toLocaleString();
+                document.getElementById('admin-total-coupons').textContent = totalCoupons;
+                document.getElementById('admin-total-value').textContent = totalValue.toLocaleString() + '฿';
+
+                const usersListContainer = document.getElementById('admin-users-list');
+                usersListContainer.innerHTML = '';
+
+                if (usersList.length === 0) {
+                    usersListContainer.innerHTML = '<p class="text-gray-500 text-center">ยังไม่มีสมาชิก</p>';
                     return;
                 }
 
-                // Check if expired
-                const isExpired = new Date() > new Date(couponFound.expiryTimestamp);
-                
-                // Determine status
-                let status = 'valid';
-                if (couponFound.used) {
-                    status = 'used';
-                } else if (isExpired) {
-                    status = 'expired';
-                }
-
-                showVerificationResult({
-                    status: status,
-                    coupon: {
-                        code: couponFound.code,
-                        name: couponFound.name,
-                        type: couponFound.type,
-                        value: couponFound.value,
-                        createdDate: couponFound.createdDate,
-                        expiryDate: couponFound.expiryDate
-                    },
-                    owner: {
-                        name: ownerData.name,
-                        email: ownerData.email,
-                        tier: ownerData.tier,
-                        points: ownerData.points
-                    }
+                usersList.forEach(user => {
+                    const userDiv = document.createElement('div');
+                    userDiv.className = 'border rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors';
+                    userDiv.style.borderColor = '#DACFBD';
+                    
+                    userDiv.addEventListener('dblclick', function() {
+                        console.log('Double clicked user:', user.name);
+                        showUserDetails(user);
+                    });
+                    
+                    const cardStatus = user.hasCard ? '✅ มีบัตร' : '❌ ยังไม่มีบัตร';
+                    const memberID = user.memberID || '-';
+                    
+                    userDiv.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h4 class="font-semibold">${user.name}</h4>
+                                <p class="text-sm text-gray-600">${user.email}</p>
+                                <p class="text-xs text-gray-500">รหัสสมาชิก: ${memberID}</p>
+                                <p class="text-xs text-gray-500">สมัครเมื่อ: ${new Date(user.createdAt).toLocaleDateString('th-TH')}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold brand-color">${user.tier}</p>
+                                <p class="text-sm">${(user.points || 0).toLocaleString()} แต้ม</p>
+                                <p class="text-xs text-gray-500">${(user.coupons || []).length} คูปอง</p>
+                                <p class="text-xs ${user.hasCard ? 'text-green-600' : 'text-red-600'}">${cardStatus}</p>
+                            </div>
+                        </div>
+                        <div class="mt-2 text-xs text-blue-600 font-medium">
+                            💡 ดับเบิลคลิกเพื่อดูรายละเอียด หรือคลิกปุ่มด้านล่าง
+                        </div>
+                        <div class="mt-3">
+                            <button onclick="showUserDetails(${JSON.stringify(user).replace(/"/g, '&quot;')})" class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg text-sm hover:bg-blue-600 transition-colors">
+                                👀 ดูรายละเอียด
+                            </button>
+                        </div>
+                    `;
+                    usersListContainer.appendChild(userDiv);
                 });
 
             } catch (error) {
-                console.error('Code processing error:', error);
-                alert('เกิดข้อผิดพลาดในการตรวจสอบคูปอง');
+                console.error('Error loading admin data:', error);
             }
+        }
+
+        // User Details Functions
+        let currentSelectedUser = null;
+
+        window.showUserDetails = function(user) {
+            if (typeof user === 'string') {
+                try {
+                    user = JSON.parse(user);
+                } catch (e) {
+                    console.error('Error parsing user data:', e);
+                    alert('เกิดข้อผิดพลาดในการโหลดข้อมูลผู้ใช้');
+                    return;
+                }
+            }
+            
+            currentSelectedUser = user;
+            console.log('Showing user details for:', user.name);
+            
+            document.getElementById('user-detail-name').textContent = user.name || '-';
+            document.getElementById('user-detail-email').textContent = user.email || '-';
+            document.getElementById('user-detail-birthdate').textContent = user.birthDate ? new Date(user.birthDate).toLocaleDateString('th-TH', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            }) : '-';
+            document.getElementById('user-detail-uid').textContent = user.uid || '-';
+            document.getElementById('user-detail-created').textContent = user.createdAt ? new Date(user.createdAt).toLocaleDateString('th-TH', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }) : '-';
+            document.getElementById('user-detail-tier').textContent = user.tier || 'Bronze';
+            document.getElementById('user-detail-member-id').textContent = user.memberID || 'ยังไม่มีรหัส';
+            document.getElementById('user-detail-card-status').textContent = user.hasCard ? '✅ มีบัตรแล้ว' : '❌ ยังไม่มีบัตร';
+            document.getElementById('user-detail-points').textContent = (user.points || 0).toLocaleString();
+            
+            const userCoupons = user.coupons || [];
+            document.getElementById('user-detail-coupon-count').textContent = userCoupons.length;
+            
+            const couponsContainer = document.getElementById('user-detail-coupons');
+            
+            if (userCoupons.length === 0) {
+                couponsContainer.innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <div class="text-4xl mb-2">📭</div>
+                        <p>ยังไม่มีคูปอง</p>
+                    </div>
+                `;
+            } else {
+                couponsContainer.innerHTML = '<div class="space-y-4"></div>';
+                const couponsGrid = couponsContainer.querySelector('.space-y-4');
+                
+                userCoupons.forEach((coupon, index) => {
+                    const isExpired = new Date() > new Date(coupon.expiryTimestamp || coupon.expiryDate);
+                    const statusIcon = coupon.used ? '✅ ใช้แล้ว' : isExpired ? '⏰ หมดอายุ' : '🎫 ใช้ได้';
+                    const statusColor = coupon.used ? 'bg-gray-100 text-gray-600' : 
+                                       isExpired ? 'bg-red-100 text-red-600' : 
+                                       'bg-green-100 text-green-600';
+                    
+                    const couponDiv = document.createElement('div');
+                    couponDiv.className = 'border rounded-lg p-4 hover:bg-gray-50';
+                    couponDiv.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="font-semibold text-lg">#${index + 1}</span>
+                                    <span class="font-mono text-sm bg-gray-200 px-2 py-1 rounded">${coupon.code}</span>
+                                </div>
+                                <h4 class="font-semibold brand-color">${coupon.name}</h4>
+                                <p class="text-sm text-gray-600 mb-2">${coupon.description || '-'}</p>
+                                <div class="text-xs text-gray-500 space-y-1">
+                                    <p>💰 มูลค่า: ${coupon.type === 'coupon' ? `฿${coupon.value}` : `${coupon.value}%`}</p>
+                                    <p>📅 ได้รับ: ${coupon.createdDate}</p>
+                                    <p>⏰ หมดอายุ: ${coupon.expiryDate}</p>
+                                    ${coupon.used ? `<p>✅ ใช้เมื่อ: ${coupon.usedDate || 'ไม่ระบุ'}</p>` : ''}
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-2xl font-bold brand-color mb-2">
+                                    ${coupon.type === 'coupon' ? `฿${coupon.value}` : `${coupon.value}%`}
+                                </div>
+                                <div class="text-center py-1 px-3 rounded-full text-xs font-semibold ${statusColor}">
+                                    ${statusIcon}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    couponsGrid.appendChild(couponDiv);
+                });
+            }
+            
+            document.body.style.overflow = 'hidden';
+            document.getElementById('user-details-modal').classList.remove('hidden');
         };
 
-        // Auto-format coupon code input
-        document.addEventListener('DOMContentLoaded', function() {
-            const codeInput = document.getElementById('coupon-code-input');
-            if (codeInput) {
-                codeInput.addEventListener('input', function(e) {
-                    let value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-                    if (value.length > 12) {
-                        value = value.substring(0, 12);
-                    }
-                    e.target.value = value;
-                });
+        window.closeUserDetailsModal = function() {
+            document.getElementById('user-details-modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+            currentSelectedUser = null;
+        };
 
-                // Enter key to search
-                codeInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        processCouponCode();
-                    }
-                });
+        document.getElementById('user-details-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeUserDetailsModal();
             }
         });
 
-        // Scanner Functions
-        window.processQRData = async function() {
-            const qrInput = document.getElementById('qr-data-input').value.trim();
+        window.editUserPoints = function() {
+            if (!currentSelectedUser) return;
             
-            if (!qrInput) {
-                alert('กรุณาใส่ข้อมูล QR Code');
+            const currentPoints = currentSelectedUser.points || 0;
+            const newPoints = prompt(`แก้ไขแต้มของ ${currentSelectedUser.name}\n\nแต้มปัจจุบัน: ${currentPoints.toLocaleString()}\nใส่แต้มใหม่:`, currentPoints);
+            
+            if (newPoints === null) return;
+            
+            const pointsNumber = parseInt(newPoints);
+            if (isNaN(pointsNumber) || pointsNumber < 0) {
+                alert('กรุณาใส่จำนวนแต้มที่ถูกต้อง (ตัวเลขที่มากกว่าหรือเท่ากับ 0)');
                 return;
             }
+            
+            updateUserPoints(currentSelectedUser.uid, pointsNumber);
+        };
 
+        window.resetUserPassword = async function() {
+            if (!currentSelectedUser) return;
+            
+            const confirmed = confirm(`ยืนยันการรีเซ็ตรหัสผ่านของ ${currentSelectedUser.name}?\n\nระบบจะส่งลิงค์รีเซ็ตไปที่ ${currentSelectedUser.email}`);
+            
+            if (!confirmed) return;
+            
             try {
-                const qrData = JSON.parse(qrInput);
+                const { sendPasswordResetEmail } = await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js');
                 
-                if (qrData.type !== 'LEISMO_COUPON') {
-                    throw new Error('ไม่ใช่ QR Code ของคูปอง Leismo');
-                }
-
-                // Find the coupon in Firebase
-                const { collection, query, where, getDocs } = window.firebaseLibs;
-                const usersRef = collection(window.db, 'users');
-                const q = query(usersRef, where('coupons', 'array-contains-any', [{ code: qrData.code }]));
+                await sendPasswordResetEmail(window.auth, currentSelectedUser.email);
                 
-                let couponFound = null;
-                let ownerData = null;
-
-                const querySnapshot = await getDocs(usersRef);
-                querySnapshot.forEach((doc) => {
-                    const userData = doc.data();
-                    const userCoupons = userData.coupons || [];
-                    const foundCoupon = userCoupons.find(c => c.code === qrData.code);
-                    
-                    if (foundCoupon) {
-                        couponFound = foundCoupon;
-                        ownerData = userData;
-                    }
-                });
-
-                if (!couponFound) {
-                    showVerificationResult({
-                        status: 'invalid',
-                        coupon: {
-                            code: qrData.code,
-                            name: 'คูปองไม่พบ',
-                            type: 'unknown',
-                            value: 0,
-                            createdDate: '-',
-                            expiryDate: '-'
-                        },
-                        owner: {
-                            name: 'ไม่พบข้อมูล',
-                            email: '-',
-                            tier: '-',
-                            points: 0
-                        }
-                    });
-                    return;
-                }
-
-                // Check if expired
-                const isExpired = new Date() > new Date(couponFound.expiryTimestamp);
+                alert(`✅ ส่งลิงค์รีเซ็ตรหัสผ่านสำเร็จ!\n\nส่งไปที่: ${currentSelectedUser.email}\nกรุณาแจ้งลูกค้าให้ตรวจสอบอีเมล (รวมถึงโฟลเดอร์ Spam)`);
                 
-                // Determine status
-                let status = 'valid';
-                if (couponFound.used) {
-                    status = 'used';
-                } else if (isExpired) {
-                    status = 'expired';
-                }
-
-                showVerificationResult({
-                    status: status,
-                    coupon: {
-                        code: couponFound.code,
-                        name: couponFound.name,
-                        type: couponFound.type,
-                        value: couponFound.value,
-                        createdDate: couponFound.createdDate,
-                        expiryDate: couponFound.expiryDate
-                    },
-                    owner: {
-                        name: ownerData.name,
-                        email: ownerData.email,
-                        tier: ownerData.tier,
-                        points: ownerData.points
-                    }
-                });
-
             } catch (error) {
-                console.error('QR processing error:', error);
-                alert('ข้อมูล QR Code ไม่ถูกต้อง หรือเกิดข้อผิดพลาดในการตรวจสอบ');
+                console.error('Admin password reset error:', error);
+                let errorMessage = 'เกิดข้อผิดพลาดในการส่งอีเมลรีเซ็ต';
+                
+                if (error.code === 'auth/user-not-found') {
+                    errorMessage = 'ไม่พบบัญชีผู้ใช้ที่ใช้อีเมลนี้';
+                } else if (error.code === 'auth/too-many-requests') {
+                    errorMessage = 'ส่งคำขอมากเกินไป กรุณาลองใหม่ภายหลัง';
+                }
+                
+                alert(`❌ เกิดข้อผิดพลาด\n${errorMessage}`);
             }
         };
 
-        function showVerificationResult(result) {
-            const container = document.getElementById('coupon-verification-result');
-            container.classList.remove('hidden');
-
-            let statusColor, statusIcon, statusText;
-            
-            switch (result.status) {
-                case 'valid':
-                    statusColor = 'bg-green-50 border-green-200';
-                    statusIcon = '✅';
-                    statusText = 'คูปองใช้ได้';
-                    break;
-                case 'used':
-                    statusColor = 'bg-red-50 border-red-200';
-                    statusIcon = '❌';
-                    statusText = 'คูปองใช้แล้ว';
-                    break;
-                case 'expired':
-                    statusColor = 'bg-orange-50 border-orange-200';
-                    statusIcon = '⏰';
-                    statusText = 'คูปองหมดอายุ';
-                    break;
-                case 'invalid':
-                    statusColor = 'bg-red-50 border-red-200';
-                    statusIcon = '🚫';
-                    statusText = 'คูปองไม่ถูกต้อง';
-                    break;
+        async function updateUserPoints(userId, newPoints) {
+            try {
+                const { doc, updateDoc } = window.firebaseLibs;
+                const userRef = doc(window.db, 'users', userId);
+                
+                await updateDoc(userRef, {
+                    points: newPoints
+                });
+                
+                if (currentSelectedUser) {
+                    currentSelectedUser.points = newPoints;
+                    document.getElementById('user-detail-points').textContent = newPoints.toLocaleString();
+                }
+                
+                alert(`✅ แก้ไขแต้มสำเร็จ!\nแต้มใหม่: ${newPoints.toLocaleString()} แต้ม`);
+                
+                loadAdminData();
+                
+            } catch (error) {
+                console.error('Error updating points:', error);
+                alert('เกิดข้อผิดพลาดในการแก้ไขแต้ม');
             }
-
-            const coupon = result.coupon;
-            const owner = result.owner;
-            const canUse = result.status === 'valid';
-
-            container.innerHTML = `
-                <div class="border-2 rounded-lg p-6 ${statusColor}">
-                    <div class="text-center mb-6">
-                        <div class="text-4xl mb-2">${statusIcon}</div>
-                        <h3 class="text-xl font-semibold">${statusText}</h3>
-                    </div>
-
-                    <div class="grid md:grid-cols-2 gap-6">
-                        <div class="space-y-3">
-                            <h4 class="font-semibold text-gray-800">ข้อมูลคูปอง</h4>
-                            <div class="space-y-2 text-sm">
-                                <p><strong>รหัส:</strong> ${coupon.code}</p>
-                                <p><strong>ชื่อ:</strong> ${coupon.name}</p>
-                                <p><strong>มูลค่า:</strong> ${coupon.type === 'coupon' ? `฿${coupon.value}` : coupon.type === 'percent' ? `${coupon.value}%` : '-'}</p>
-                                <p><strong>ได้รับ:</strong> ${coupon.createdDate}</p>
-                                <p><strong>หมดอายุ:</strong> ${coupon.expiryDate}</p>
-                            </div>
-                        </div>
-
-                        <div class="space-y-3">
-                            <h4 class="font-semibold text-gray-800">ข้อมูลลูกค้า</h4>
-                            <div class="space-y-2 text-sm">
-                                <p><strong>ชื่อ:</strong> ${owner.name}</p>
-                                <p><strong>อีเมล:</strong> ${owner.email}</p>
-                                <p><strong>ระดับ:</strong> ${owner.tier}</p>
-                                <p><strong>แต้มปัจจุบัน:</strong> ${owner.points?.toLocaleString() || '0'} แต้ม</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    ${canUse ? `
-                        <div class="mt-6 text-center">
-                            <button onclick="useCoupon('${coupon.code}')" class="bg-green-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-600">
-                                ✅ ยืนยันการใช้คูปอง
-                            </button>
-                        </div>
-                    ` : ''}
-                </div>
-            `;
         }
 
-        window.useCoupon = async function(couponCode) {
-            if (!confirm(`ยืนยันการใช้คูปอง ${couponCode}?`)) {
+        // Forgot Password Functions
+        window.showForgotPasswordModal = function() {
+            document.getElementById('forgot-password-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            
+            document.getElementById('forgot-email').value = '';
+            hideError('forgot-error');
+            hideError('forgot-success');
+        };
+
+        window.closeForgotPasswordModal = function() {
+            document.getElementById('forgot-password-modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        };
+
+        document.getElementById('forgot-password-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeForgotPasswordModal();
+            }
+        });
+
+        window.handleForgotPassword = async function(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('forgot-email').value.trim();
+            const submitBtn = document.getElementById('forgot-submit');
+            
+            if (!email) {
+                showError('forgot-error', 'กรุณาใส่อีเมล');
                 return;
             }
 
+            submitBtn.textContent = 'กำลังส่ง...';
+            submitBtn.disabled = true;
+            hideError('forgot-error');
+            hideError('forgot-success');
+
             try {
-                const { collection, getDocs, doc, updateDoc } = window.firebaseLibs;
-                const usersRef = collection(window.db, 'users');
-                const querySnapshot = await getDocs(usersRef);
+                const { sendPasswordResetEmail } = await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js');
                 
-                let foundUser = null;
-                let couponIndex = -1;
-
-                querySnapshot.forEach((docSnapshot) => {
-                    const userData = docSnapshot.data();
-                    const userCoupons = userData.coupons || [];
-                    const index = userCoupons.findIndex(c => c.code === couponCode);
-                    
-                    if (index !== -1) {
-                        foundUser = { id: docSnapshot.id, data: userData };
-                        couponIndex = index;
-                    }
-                });
-
-                if (foundUser && couponIndex !== -1) {
-                    // Mark coupon as used
-                    foundUser.data.coupons[couponIndex].used = true;
-                    foundUser.data.coupons[couponIndex].usedDate = formatThaiDate(new Date());
-                    foundUser.data.coupons[couponIndex].usedTimestamp = new Date().toISOString();
-
-                    // Update in Firestore
-                    const userRef = doc(window.db, 'users', foundUser.id);
-                    await updateDoc(userRef, {
-                        coupons: foundUser.data.coupons
-                    });
-
-                    alert('✅ ยืนยันการใช้คูปองสำเร็จ!');
-                    
-                    // Refresh the verification result
-                    document.getElementById('qr-data-input').value = '';
-                    document.getElementById('coupon-verification-result').classList.add('hidden');
-                } else {
-                    alert('ไม่พบคูปองที่ระบุ');
-                }
-
+                await sendPasswordResetEmail(window.auth, email);
+                
+                document.getElementById('forgot-success').textContent = `✅ ส่งลิงค์รีเซ็ตรหัสผ่านไปที่ ${email} แล้ว\nกรุณาตรวจสอบอีเมล (รวมถึงโฟลเดอร์ Spam)`;
+                document.getElementById('forgot-success').classList.remove('hidden');
+                
+                document.getElementById('forgot-email').value = '';
+                
             } catch (error) {
-                console.error('Error using coupon:', error);
-                alert('เกิดข้อผิดพลาดในการใช้คูปอง');
+                console.error('Password reset error:', error);
+                let errorMessage = 'เกิดข้อผิดพลาดในการส่งอีเมลรีเซ็ต';
+                
+                if (error.code === 'auth/user-not-found') {
+                    errorMessage = 'ไม่พบบัญชีผู้ใช้ที่ใช้อีเมลนี้';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = 'รูปแบบอีเมลไม่ถูกต้อง';
+                } else if (error.code === 'auth/too-many-requests') {
+                    errorMessage = 'ส่งคำขอมากเกินไป กรุณาลองใหม่ภายหลัง';
+                }
+                
+                showError('forgot-error', errorMessage);
+            } finally {
+                submitBtn.textContent = '📨 ส่งลิงค์รีเซ็ต';
+                submitBtn.disabled = false;
             }
         };
 
@@ -2342,303 +2596,10 @@
             }
         }
 
-        // Admin verification for coupon checking
-        window.verifyAdminAccess = function(event) {
-            event.preventDefault();
-            
-            const password = document.getElementById('admin-verify-password').value;
-            const submitBtn = document.getElementById('admin-verify-submit');
-            
-            if (!password) {
-                showError('admin-verify-error', 'กรุณาใส่รหัสผ่าน');
-                return;
-            }
-            
-            submitBtn.textContent = 'กำลังตรวจสอบ...';
-            submitBtn.disabled = true;
-            
-            // Check admin password
-            if (password === 'admin123') {
-                hideError('admin-verify-error');
-                document.getElementById('admin-auth-section').classList.add('hidden');
-                document.getElementById('coupon-check-section').classList.remove('hidden');
-                
-                // Process the coupon code from URL
-                const hash = window.location.hash;
-                if (hash.startsWith('#verify-')) {
-                    const couponCode = hash.replace('#verify-', '');
-                    document.getElementById('checking-coupon-code').textContent = couponCode;
-                    checkCouponStatus(couponCode);
-                }
-            } else {
-                showError('admin-verify-error', 'รหัสผ่านไม่ถูกต้อง');
-            }
-            
-            submitBtn.textContent = '🔓 เข้าสู่ระบบตรวจสอบ';
-            submitBtn.disabled = false;
-        };
-
-        // Check coupon status for verification page
-        async function checkCouponStatus(couponCode) {
-            const resultContainer = document.getElementById('coupon-status-result');
-            resultContainer.innerHTML = '<div class="text-center py-8"><div class="animate-spin text-4xl">⏳</div><p class="mt-2">กำลังตรวจสอบ...</p></div>';
-            
-            try {
-                const { collection, getDocs } = window.firebaseLibs;
-                const usersRef = collection(window.db, 'users');
-                const querySnapshot = await getDocs(usersRef);
-                
-                let couponFound = null;
-                let ownerData = null;
-
-                querySnapshot.forEach((doc) => {
-                    const userData = doc.data();
-                    const userCoupons = userData.coupons || [];
-                    const foundCoupon = userCoupons.find(c => c.code === couponCode);
-                    
-                    if (foundCoupon) {
-                        couponFound = foundCoupon;
-                        ownerData = userData;
-                    }
-                });
-
-                if (!couponFound) {
-                    showCouponResult({
-                        status: 'invalid',
-                        coupon: { code: couponCode, name: 'ไม่พบคูปอง' },
-                        owner: { name: 'ไม่พบข้อมูล' }
-                    });
-                    return;
-                }
-
-                // Check status
-                const isExpired = new Date() > new Date(couponFound.expiryTimestamp);
-                let status = 'valid';
-                if (couponFound.used) {
-                    status = 'used';
-                } else if (isExpired) {
-                    status = 'expired';
-                }
-
-                showCouponResult({
-                    status: status,
-                    coupon: couponFound,
-                    owner: ownerData
-                });
-
-            } catch (error) {
-                console.error('Error checking coupon:', error);
-                resultContainer.innerHTML = '<div class="text-center py-8 text-red-600"><div class="text-4xl">❌</div><p class="mt-2">เกิดข้อผิดพลาดในการตรวจสอบ</p></div>';
-            }
-        }
-
-        function showCouponResult(result) {
-            const container = document.getElementById('coupon-status-result');
-            
-            let statusColor, statusIcon, statusText, statusBg;
-            
-            switch (result.status) {
-                case 'valid':
-                    statusColor = 'text-green-800';
-                    statusBg = 'bg-green-50 border-green-200';
-                    statusIcon = '✅';
-                    statusText = 'คูปองใช้ได้';
-                    break;
-                case 'used':
-                    statusColor = 'text-red-800';
-                    statusBg = 'bg-red-50 border-red-200';
-                    statusIcon = '❌';
-                    statusText = 'คูปองใช้แล้ว';
-                    break;
-                case 'expired':
-                    statusColor = 'text-orange-800';
-                    statusBg = 'bg-orange-50 border-orange-200';
-                    statusIcon = '⏰';
-                    statusText = 'คูปองหมดอายุ';
-                    break;
-                default:
-                    statusColor = 'text-red-800';
-                    statusBg = 'bg-red-50 border-red-200';
-                    statusIcon = '🚫';
-                    statusText = 'คูปองไม่ถูกต้อง';
-            }
-
-            const canUse = result.status === 'valid';
-            const coupon = result.coupon;
-            const owner = result.owner;
-
-            container.innerHTML = `
-                <div class="border-2 rounded-lg p-6 ${statusBg}">
-                    <div class="text-center mb-6">
-                        <div class="text-6xl mb-4">${statusIcon}</div>
-                        <h2 class="text-2xl font-bold ${statusColor}">${statusText}</h2>
-                    </div>
-
-                    ${coupon.name !== 'ไม่พบคูปอง' ? `
-                        <div class="grid md:grid-cols-2 gap-6 mb-6">
-                            <div class="space-y-3">
-                                <h3 class="text-lg font-semibold text-gray-800">ข้อมูลคูปอง</h3>
-                                <div class="space-y-2 text-sm">
-                                    <p><strong>รหัส:</strong> ${coupon.code}</p>
-                                    <p><strong>ชื่อ:</strong> ${coupon.name}</p>
-                                    <p><strong>มูลค่า:</strong> ${coupon.type === 'coupon' ? `฿${coupon.value}` : `${coupon.value}%`}</p>
-                                    <p><strong>ได้รับ:</strong> ${coupon.createdDate}</p>
-                                    <p><strong>หมดอายุ:</strong> ${coupon.expiryDate}</p>
-                                    ${coupon.used ? `<p><strong>ใช้เมื่อ:</strong> ${coupon.usedDate || 'ไม่ระบุ'}</p>` : ''}
-                                </div>
-                            </div>
-
-                            <div class="space-y-3">
-                                <h3 class="text-lg font-semibold text-gray-800">ข้อมูลลูกค้า</h3>
-                                <div class="space-y-2 text-sm">
-                                    <p><strong>ชื่อ:</strong> ${owner.name}</p>
-                                    <p><strong>อีเมล:</strong> ${owner.email}</p>
-                                    <p><strong>ระดับสมาชิก:</strong> ${owner.tier}</p>
-                                    <p><strong>แต้มปัจจุบัน:</strong> ${owner.points?.toLocaleString() || '0'} แต้ม</p>
-                                </div>
-                            </div>
-                        </div>
-                    ` : ''}
-
-                    ${canUse ? `
-                        <div class="text-center">
-                            <button onclick="useCouponFromVerify('${coupon.code}')" class="bg-green-500 text-white px-8 py-4 rounded-lg font-semibold hover:bg-green-600 text-lg">
-                                ✅ ยืนยันการใช้คูปอง
-                            </button>
-                        </div>
-                    ` : ''}
-                    
-                    <div class="mt-6 text-center">
-                        <button onclick="goBackToHome()" class="bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600">
-                            🏠 กลับหน้าหลัก
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
-
-        // Use coupon from verification page
-        window.useCouponFromVerify = async function(couponCode) {
-            if (!confirm(`ยืนยันการใช้คูปอง ${couponCode}?`)) {
-                return;
-            }
-
-            try {
-                const { collection, getDocs, doc, updateDoc } = window.firebaseLibs;
-                const usersRef = collection(window.db, 'users');
-                const querySnapshot = await getDocs(usersRef);
-                
-                let foundUser = null;
-                let couponIndex = -1;
-
-                querySnapshot.forEach((docSnapshot) => {
-                    const userData = docSnapshot.data();
-                    const userCoupons = userData.coupons || [];
-                    const index = userCoupons.findIndex(c => c.code === couponCode);
-                    
-                    if (index !== -1) {
-                        foundUser = { id: docSnapshot.id, data: userData };
-                        couponIndex = index;
-                    }
-                });
-
-                if (foundUser && couponIndex !== -1) {
-                    // Mark coupon as used
-                    foundUser.data.coupons[couponIndex].used = true;
-                    foundUser.data.coupons[couponIndex].usedDate = formatThaiDate(new Date());
-                    foundUser.data.coupons[couponIndex].usedTimestamp = new Date().toISOString();
-
-                    // Update in Firestore
-                    const userRef = doc(window.db, 'users', foundUser.id);
-                    await updateDoc(userRef, {
-                        coupons: foundUser.data.coupons
-                    });
-
-                    alert('✅ ยืนยันการใช้คูปองสำเร็จ!');
-                    
-                    // Refresh the status
-                    checkCouponStatus(couponCode);
-                } else {
-                    alert('ไม่พบคูปองที่ระบุ');
-                }
-
-            } catch (error) {
-                console.error('Error using coupon:', error);
-                alert('เกิดข้อผิดพลาดในการใช้คูปอง');
-            }
-        };
-
-        window.goBackToHome = function() {
-            history.replaceState(null, null, window.location.pathname);
-            showPage('home');
-        };
-
-        // Handle QR Code verification URL
-        function handleVerificationUrl() {
-            const hash = window.location.hash;
-            if (hash.startsWith('#verify-')) {
-                const couponCode = hash.replace('#verify-', '');
-                
-                // Go to verification page
-                showPage('verify');
-                
-                // Reset the form
-                document.getElementById('admin-auth-section').classList.remove('hidden');
-                document.getElementById('coupon-check-section').classList.add('hidden');
-                document.getElementById('admin-verify-password').value = '';
-                hideError('admin-verify-error');
-            }
-        }
-
-        // Update showPage function to handle verify page
-        const originalShowPage = window.showPage;
-        window.showPage = function(pageName) {
-            const pages = ['home', 'login', 'register', 'loyalty', 'admin', 'scanner', 'verify'];
-            pages.forEach(page => {
-                const pageElement = document.getElementById(`page-${page}`);
-                if (pageElement) {
-                    pageElement.classList.add('hidden');
-                }
-            });
-
-            const targetPage = document.getElementById(`page-${pageName}`);
-            if (targetPage) {
-                targetPage.classList.remove('hidden');
-            }
-
-            updateNavigation(pageName);
-
-            if (pageName === 'loyalty') {
-                if (!window.isLoggedIn) {
-                    showPage('login');
-                    return;
-                }
-                updateLoyaltyPage();
-            } else if (pageName === 'admin') {
-                if (!window.isLoggedIn || !window.currentUser?.isAdmin) {
-                    alert('⚠️ ไม่มีสิทธิ์เข้าถึงหน้านี้\nเฉพาะแอดมินเท่านั้น');
-                    showPage('home');
-                    return;
-                }
-                loadAdminData();
-            } else if (pageName === 'scanner') {
-                if (!window.isLoggedIn || !window.currentUser?.isAdmin) {
-                    alert('⚠️ ไม่มีสิทธิ์เข้าถึงหน้านี้\nเฉพาะแอดมินเท่านั้น');
-                    showPage('home');
-                    return;
-                }
-            }
-            // Note: verify page doesn't need admin check as it has its own auth
-        };
-
-        // Listen for hash changes (when QR code is scanned)
-        window.addEventListener('hashchange', handleVerificationUrl);
-        
         // Check URL on page load
         document.addEventListener('DOMContentLoaded', async function() {
             showPage('home');
             await initializeAdminUser();
-            handleVerificationUrl();
         });
 
     </script>
