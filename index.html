@@ -287,11 +287,11 @@
                             </div>
                             
                             <button onclick="activateMemberCard()" class="activate-button bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-12 py-4 rounded-full font-bold text-xl shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300">
-                                ✨ รับบัตรสมาชิก ✨
+                                รับบัตรสมาชิก
                             </button>
                             
                             <div class="mt-8 p-6 bg-blue-50 rounded-lg max-w-md mx-auto">
-                                <h3 class="font-semibold text-blue-800 mb-3">🎁 สิทธิประโยชน์ที่ได้รับ</h3>
+                                <h3 class="font-semibold text-blue-800 mb-3">สิทธิประโยชน์ที่ได้รับ</h3>
                                 <ul class="text-sm text-blue-700 space-y-1 text-left">
                                     <li>• แต้มสะสมทุกการซื้อ</li>
                                     <li>• คูปองส่วนลดพิเศษ</li>
@@ -375,6 +375,29 @@
                                 <p>• ใช้จ่าย: 0-5,000฿</p>
                                 <p>• ส่วนลด: 5%</p>
                                 <p>• คูปองพิเศษ: 1/เดือน</p>
+                            </div>
+                        </div>
+
+                        <!-- Progress to Next Tier -->
+                        <div class="mt-6 p-6 bg-white rounded-lg shadow-md max-w-2xl mx-auto hidden" id="tier-progress-section">
+                            <h4 class="text-lg font-semibold mb-4 brand-color">ความคืบหน้าการอัพเกรด</h4>
+                            <div class="space-y-3">
+                                <div class="flex justify-between text-sm">
+                                    <span id="progress-current-tier">Bronze</span>
+                                    <span id="progress-next-tier">Silver</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-3">
+                                    <div class="brand-bg h-3 rounded-full transition-all duration-500" style="width: 0%" id="progress-bar"></div>
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-sm text-gray-600">
+                                        ซื้อสินค้าอีก <span class="font-bold brand-color" id="progress-amount">5,001฿</span> 
+                                        เพื่ออัพเกรดเป็น <span class="font-bold brand-color" id="progress-target-tier">Silver</span>
+                                    </p>
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        ยอดซื้อปัจจุบัน: <span id="progress-current-spend">0฿</span>
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1102,7 +1125,7 @@
 
                 updateLoyaltyPage();
                 
-                alert(`🎉 ยินดีด้วย! ได้รับบัตรสมาชิกแล้ว\n\nรหัสสมาชิก: ${memberID}\nสามารถใช้รหัสนี้ตรวจสอบข้อมูลได้ที่แอดมิน`);
+                alert(`ยินดีด้วย! ได้รับบัตรสมาชิกแล้ว\n\nรหัสสมาชิก: ${memberID}\nสามารถใช้รหัสนี้ตรวจสอบข้อมูลได้ที่แอดมิน`);
 
             } catch (error) {
                 console.error('Error activating card:', error);
@@ -1232,9 +1255,11 @@
         const tierData = {
             bronze: {
                 name: 'Bronze',
-                icon: '🥉',
+                icon: 'Bronze',
                 bgGradient: 'linear-gradient(135deg, #526170 0%, #3a4651 100%)',
                 textColor: '#CFDAE3',
+                spendMin: 0,
+                spendMax: 5000,
                 benefits: [
                     '• ใช้จ่าย: 0-5,000฿',
                     '• ส่วนลด: 5%',
@@ -1244,9 +1269,11 @@
             },
             silver: {
                 name: 'Silver',
-                icon: '🥈',
+                icon: 'Silver',
                 bgGradient: 'linear-gradient(135deg, #F2EDE5 0%, #e8ddd0 100%)',
                 textColor: '#B19D87',
+                spendMin: 5001,
+                spendMax: 15000,
                 benefits: [
                     '• ใช้จ่าย: 5,001-15,000฿',
                     '• ส่วนลด: 10%',
@@ -1256,9 +1283,11 @@
             },
             gold: {
                 name: 'Gold',
-                icon: '🥇',
+                icon: 'Gold',
                 bgGradient: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
                 textColor: '#8B4513',
+                spendMin: 15001,
+                spendMax: 50000,
                 benefits: [
                     '• ใช้จ่าย: 15,001-50,000฿',
                     '• ส่วนลด: 15%',
@@ -1268,9 +1297,11 @@
             },
             platinum: {
                 name: 'Platinum',
-                icon: '💎',
+                icon: 'Platinum',
                 bgGradient: 'linear-gradient(135deg, #E5E4E2 0%, #C0C0C0 100%)',
                 textColor: '#2F4F4F',
+                spendMin: 50001,
+                spendMax: null,
                 benefits: [
                     '• ใช้จ่าย: 50,001฿+',
                     '• ส่วนลด: 20%',
@@ -1292,6 +1323,10 @@
             // Update current tier index
             currentTierIndex = tierOrder.indexOf(tier);
             
+            // Check if this is user's actual tier
+            const userTier = (window.currentUser?.tier || 'Bronze').toLowerCase();
+            const isUserTier = tier === userTier;
+            
             // Add flip animation
             card.classList.add('card-flip');
             
@@ -1301,7 +1336,35 @@
                 card.style.background = data.bgGradient;
                 card.style.color = data.textColor;
                 
-                // Update card content (แต่ใช้ข้อมูลจริงของผู้ใช้)
+                if (isUserTier) {
+                    // Show real user data for their actual tier
+                    card.style.filter = 'none';
+                    document.getElementById('card-member-name').textContent = window.currentUser.name;
+                    document.getElementById('card-member-email').textContent = window.currentUser.email;
+                    document.getElementById('card-member-id').textContent = window.currentUser.memberID || 'XXXX XXXX XXX';
+                    document.getElementById('card-points').textContent = (window.currentUser.points || 0).toLocaleString();
+                    
+                    // Format member since date - แบบ คส เทน ปีสากล
+                    if (window.currentUser.createdAt) {
+                        const memberSince = new Date(window.currentUser.createdAt).toLocaleDateString('th', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: '2-digit',
+                            calendar: 'gregory'
+                        });
+                        document.getElementById('card-member-since').textContent = memberSince;
+                    }
+                } else {
+                    // Blur and hide personal data for other tiers
+                    card.style.filter = 'blur(2px)';
+                    document.getElementById('card-member-name').textContent = 'Preview Mode';
+                    document.getElementById('card-member-email').textContent = 'member@example.com';
+                    document.getElementById('card-member-id').textContent = 'XXXX XXXX XXX';
+                    document.getElementById('card-points').textContent = '---';
+                    document.getElementById('card-member-since').textContent = '--/--/----';
+                }
+                
+                // Update tier display
                 document.getElementById('card-tier-icon').textContent = data.icon;
                 document.getElementById('card-tier-name').textContent = data.name;
                 
@@ -1359,6 +1422,7 @@
                 document.getElementById('member-card-section').classList.add('hidden');
                 document.getElementById('loyalty-tabs').classList.add('hidden');
                 document.getElementById('tier-info-section').classList.add('hidden');
+                document.getElementById('tier-progress-section').classList.add('hidden');
                 return;
             }
 
@@ -1367,6 +1431,7 @@
             document.getElementById('member-card-section').classList.remove('hidden');
             document.getElementById('loyalty-tabs').classList.remove('hidden');
             document.getElementById('tier-info-section').classList.remove('hidden');
+            document.getElementById('tier-progress-section').classList.remove('hidden');
             document.getElementById('loyalty-dashboard').classList.remove('hidden');
 
             // Update card data
@@ -1375,9 +1440,14 @@
             document.getElementById('card-member-id').textContent = window.currentUser.memberID || 'XXXX XXXX XXX';
             document.getElementById('card-points').textContent = (window.currentUser.points || 0).toLocaleString();
             
-            // Format member since date
+            // Format member since date - แสดงวันที่แบบ คส เทน ปีสากล
             if (window.currentUser.createdAt) {
-                const memberSince = new Date(window.currentUser.createdAt).getFullYear();
+                const memberSince = new Date(window.currentUser.createdAt).toLocaleDateString('th', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: '2-digit',
+                    calendar: 'gregory'
+                });
                 document.getElementById('card-member-since').textContent = memberSince;
             }
 
@@ -1385,10 +1455,49 @@
             const userTier = (window.currentUser.tier || 'Bronze').toLowerCase();
             showTierCard(userTier);
 
+            // Update progress bar
+            updateTierProgress();
+
             // Update dashboard stats
             document.getElementById('dashboard-tier').textContent = window.currentUser.tier;
             document.getElementById('dashboard-points').textContent = window.currentUser.points?.toLocaleString() || '0';
             document.getElementById('dashboard-coupons').textContent = (window.currentUser.coupons || []).filter(c => !c.used).length;
+        }
+
+        function updateTierProgress() {
+            if (!window.currentUser) return;
+            
+            const userTier = (window.currentUser.tier || 'Bronze').toLowerCase();
+            const currentTierData = tierData[userTier];
+            
+            // Simulate current spending (in real app, this would come from purchase history)
+            // For demo, use points as approximation of spending
+            const currentSpend = Math.min(window.currentUser.points * 10, currentTierData.spendMax || 999999);
+            
+            // Find next tier
+            const currentIndex = tierOrder.indexOf(userTier);
+            const nextTierKey = tierOrder[currentIndex + 1];
+            
+            if (!nextTierKey) {
+                // Already at highest tier
+                document.getElementById('tier-progress-section').classList.add('hidden');
+                return;
+            }
+            
+            const nextTierData = tierData[nextTierKey];
+            const targetSpend = nextTierData.spendMin;
+            const remainingSpend = Math.max(0, targetSpend - currentSpend);
+            const progressPercent = Math.min(100, (currentSpend / targetSpend) * 100);
+            
+            // Update progress elements
+            document.getElementById('progress-current-tier').textContent = currentTierData.name;
+            document.getElementById('progress-next-tier').textContent = nextTierData.name;
+            document.getElementById('progress-bar').style.width = progressPercent + '%';
+            document.getElementById('progress-amount').textContent = remainingSpend.toLocaleString() + '฿';
+            document.getElementById('progress-target-tier').textContent = nextTierData.name;
+            document.getElementById('progress-current-spend').textContent = currentSpend.toLocaleString() + '฿';
+            
+            document.getElementById('tier-progress-section').classList.remove('hidden');
         }
 
         // Keyboard navigation
